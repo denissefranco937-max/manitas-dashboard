@@ -760,12 +760,19 @@ async function seedDatabase(){
 async function persistData(orderObj){
   saveLocalFallback();
   if(!orderObj){setSynced();return;}
+  // If the order has a tmp_ id it was never saved to DB — treat as new
+  const isTmp = String(orderObj._id).startsWith('tmp_');
+  const isNew = orderObj._isNew || isTmp;
   setSyncing('Saving…');
   try{
     let res;
-    if(orderObj._isNew){
-      res=await fetch(sbUrl('orders'),{method:'POST',headers:SB_HEADERS,body:JSON.stringify(orderToDb(orderObj))});
-      if(!res.ok) throw new Error('HTTP '+res.status);
+    if(isNew){
+      const dbRow=orderToDb(orderObj);
+      res=await fetch(sbUrl('orders'),{method:'POST',headers:SB_HEADERS,body:JSON.stringify(dbRow)});
+      if(!res.ok){
+        const errText=await res.text();
+        throw new Error('POST '+res.status+': '+errText);
+      }
       const result=await res.json();
       if(result[0]&&result[0].id){
         const realId=result[0].id;
@@ -775,14 +782,19 @@ async function persistData(orderObj){
         currentOrderId=realId;
       }
     } else {
-      res=await fetch(sbUrl('orders?id=eq.'+orderObj._id),{method:'PATCH',headers:SB_HEADERS,body:JSON.stringify(orderToDb(orderObj))});
-      if(!res.ok) throw new Error('HTTP '+res.status);
+      const dbRow=orderToDb(orderObj);
+      res=await fetch(sbUrl('orders?id=eq.'+orderObj._id),{method:'PATCH',headers:SB_HEADERS,body:JSON.stringify(dbRow)});
+      if(!res.ok){
+        const errText=await res.text();
+        throw new Error('PATCH '+res.status+': '+errText);
+      }
     }
     saveLocalFallback();
     setSynced();
   }catch(e){
     console.warn('Save error:',e.message);
-    setSyncError('Save failed — changes kept locally');
+    // Show specific error to help diagnose
+    setSyncError('Save failed: '+e.message.slice(0,40));
   }
 }
 
@@ -1260,7 +1272,10 @@ function saveOrder(){
   } else {
     const idx=ORDERS.findIndex(o=>o._id===currentOrderId);
     if(idx>=0){
-      ORDERS[idx]={...ORDERS[idx],...data};
+      // Preserve _id and _isNew — never overwrite them from data
+      const preserved_id=ORDERS[idx]._id;
+      const preserved_isNew=ORDERS[idx]._isNew;
+      ORDERS[idx]={...ORDERS[idx],...data,_id:preserved_id,_isNew:preserved_isNew};
       closeModal('editModal');
       refresh();
       persistData(ORDERS[idx]);
