@@ -619,14 +619,17 @@ let ORDERS = [];
 // ============================================================
 // SUPABASE CONFIG
 // ============================================================
+// ============================================================
+// SUPABASE CONFIG
+// ============================================================
 const SB_URL = 'https://piihracaeainkifdfrmm.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpaWhyYWNhZWFpbmtpZmRmcm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjk1NTIsImV4cCI6MjA5Mzc0NTU1Mn0.2KYHZ77i45pnXzXMp7KXepaEU3yyaNTYEDhkkRT0Hg0';
-const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+const SB_HEADERS = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+function sbUrl(path){ return SB_URL+'/rest/v1/'+path; }
 let isOnline = true;
 let _nextId = 0;
 const LOCAL_FALLBACK = 'manitas_offline_v1';
 
-function sbUrl(path){ return SB_URL + '/rest/v1/' + path; }
 
 // Map DB row → app order object
 function dbToOrder(row){
@@ -687,67 +690,51 @@ function setSyncError(msg){
 
 // LOAD ALL ORDERS FROM SUPABASE
 async function loadFromSupabase(){
-  // Step 1: Show built-in data immediately so dashboard is never blank
-  if(ORDERS.length === 0){
-    const localCache = localStorage.getItem(LOCAL_FALLBACK);
-    if(localCache){
+  // Show cached/built-in data immediately
+  if(ORDERS.length===0){
+    const lc=localStorage.getItem(LOCAL_FALLBACK);
+    if(lc){
       try{
-        const cached = JSON.parse(localCache);
-        if(cached.length > 0){
-          cached.forEach(o => { if(o._id >= _nextId) _nextId = o._id+1; ORDERS.push(o); });
-        }
+        const c=JSON.parse(lc);
+        if(c.length>0) c.forEach(o=>{if(o._id>=_nextId)_nextId=o._id+1;ORDERS.push(o);});
       }catch(e){}
     }
-    // If still empty, load built-in data as immediate fallback
-    if(ORDERS.length === 0){
-      BUILTIN_ORDERS.forEach((o,i) => {
-        const copy = {...o, _id: i};
-        if(copy._id >= _nextId) _nextId = copy._id + 1;
-        ORDERS.push(copy);
+    if(ORDERS.length===0){
+      BUILTIN_ORDERS.forEach((o,i)=>{
+        const cp={...o,_id:i};
+        if(cp._id>=_nextId)_nextId=cp._id+1;
+        ORDERS.push(cp);
       });
     }
   }
-
-  // Step 2: Try to connect to Supabase and get live data
   setLoadingMsg('Syncing with database…');
-  try {
-    const res = await fetch(sbUrl('orders?select=*&order=id.asc'), { headers: SB_HEADERS });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const rows = await res.json();
-
-    // If DB is empty, seed it with the built-in orders
-    if(rows.length === 0){
+  try{
+    const res=await fetch(sbUrl('orders?select=*&order=id.asc'),{headers:SB_HEADERS});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(rows.length===0){
       setLoadingMsg('First run — importing your orders…');
-      ORDERS.length = 0;
-      _nextId = 0;
+      ORDERS.length=0; _nextId=0;
       await seedDatabase();
     } else {
-      // Replace local orders with live DB data
-      ORDERS.length = 0;
-      _nextId = 0;
-      rows.forEach(r => {
-        const o = dbToOrder(r);
-        if(o._id >= _nextId) _nextId = o._id + 1;
+      ORDERS.length=0; _nextId=0;
+      rows.forEach(r=>{
+        const o=dbToOrder(r);
+        if(o._id>=_nextId) _nextId=o._id+1;
         ORDERS.push(o);
       });
     }
-
-    isOnline = true;
-    document.getElementById('offlineBanner').style.display = 'none';
+    isOnline=true;
+    document.getElementById('offlineBanner').style.display='none';
     saveLocalFallback();
     setSynced();
     return true;
-  } catch(e){
-    console.warn('Supabase load failed:', e.message || e);
-    isOnline = false;
-    // Show specific error in the offline banner to help diagnose
-    const banner = document.getElementById('offlineBanner');
-    if(e.message && e.message.includes('Failed to fetch')){
-      banner.innerHTML = '⚠ Cannot reach database — if opening as a local file, try using a web server or Netlify. <a href="https://piihracaeainkifdfrmm.supabase.co" target="_blank" style="color:var(--amber);text-decoration:underline;">Test connection</a>';
-    } else {
-      banner.innerHTML = '⚠ Database error: ' + (e.message||'unknown') + ' — working offline with built-in data';
-    }
-    banner.style.display = 'block';
+  }catch(e){
+    console.warn('Supabase load failed:',e.message);
+    isOnline=false;
+    const b=document.getElementById('offlineBanner');
+    b.innerHTML='⚠ Cannot reach database — working offline with cached data.';
+    b.style.display='block';
     setSyncError('Offline');
     return false;
   }
@@ -755,59 +742,59 @@ async function loadFromSupabase(){
 
 // SEED DATABASE with built-in orders on first run
 async function seedDatabase(){
-  const chunks = [];
+  const chunks=[];
   for(let i=0;i<BUILTIN_ORDERS.length;i+=50) chunks.push(BUILTIN_ORDERS.slice(i,i+50));
   for(const chunk of chunks){
-    const rows = chunk.map(o => orderToDb(o));
-    const res = await fetch(sbUrl('orders'), { method:'POST', headers:SB_HEADERS, body:JSON.stringify(rows) });
-    if(res.ok){
-      const inserted = await res.json();
-      inserted.forEach(r => { const o=dbToOrder(r); if(o._id>=_nextId) _nextId=o._id+1; ORDERS.push(o); });
-    }
+    const rows=chunk.map(o=>orderToDb(o));
+    try{
+      const res=await fetch(sbUrl('orders'),{method:'POST',headers:SB_HEADERS,body:JSON.stringify(rows)});
+      if(res.ok){
+        const inserted=await res.json();
+        inserted.forEach(r=>{const o=dbToOrder(r);if(o._id>=_nextId)_nextId=o._id+1;ORDERS.push(o);});
+      }
+    }catch(e){console.warn('Seed chunk failed:',e.message);}
   }
 }
 
 // SAVE ONE ORDER (insert or update)
 async function persistData(orderObj){
-  // Always save locally first as fallback
   saveLocalFallback();
-  if(!orderObj){ setSynced(); return; }
+  if(!orderObj){setSynced();return;}
   setSyncing('Saving…');
-  try {
-    let res, row;
+  try{
+    let res;
     if(orderObj._isNew){
-      const dbRow = orderToDb(orderObj);
-      res = await fetch(sbUrl('orders'), { method:'POST', headers:SB_HEADERS, body:JSON.stringify(dbRow) });
+      res=await fetch(sbUrl('orders'),{method:'POST',headers:SB_HEADERS,body:JSON.stringify(orderToDb(orderObj))});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const result=await res.json();
+      if(result[0]&&result[0].id){
+        const realId=result[0].id;
+        const idx=ORDERS.findIndex(o=>o._id===orderObj._id);
+        if(idx>=0){ORDERS[idx]._id=realId;ORDERS[idx]._isNew=false;}
+        if(realId>=_nextId)_nextId=realId+1;
+        currentOrderId=realId;
+      }
     } else {
-      const dbRow = orderToDb(orderObj);
-      res = await fetch(sbUrl('orders?id=eq.'+orderObj._id), { method:'PATCH', headers:SB_HEADERS, body:JSON.stringify(dbRow) });
-    }
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const result = await res.json();
-    if(orderObj._isNew && result[0]){
-      // Update the local order with the real DB id
-      const realId = result[0].id;
-      const idx = ORDERS.findIndex(o=>o._id===orderObj._id);
-      if(idx>=0){ ORDERS[idx]._id=realId; ORDERS[idx]._isNew=false; }
-      if(realId>=_nextId) _nextId=realId+1;
-      currentOrderId=realId;
+      res=await fetch(sbUrl('orders?id=eq.'+orderObj._id),{method:'PATCH',headers:SB_HEADERS,body:JSON.stringify(orderToDb(orderObj))});
+      if(!res.ok) throw new Error('HTTP '+res.status);
     }
     saveLocalFallback();
     setSynced();
-  } catch(e){
-    console.warn('Sync error:', e);
-    setSyncError('Sync failed — saved offline');
+  }catch(e){
+    console.warn('Save error:',e.message);
+    setSyncError('Save failed — changes kept locally');
   }
 }
 
 // DELETE ONE ORDER
 async function deleteFromDb(id){
   setSyncing('Deleting…');
-  try {
-    const res = await fetch(sbUrl('orders?id=eq.'+id), { method:'DELETE', headers:SB_HEADERS });
+  try{
+    const res=await fetch(sbUrl('orders?id=eq.'+id),{method:'DELETE',headers:SB_HEADERS});
     if(!res.ok) throw new Error('HTTP '+res.status);
     setSynced();
-  } catch(e){
+  }catch(e){
+    console.warn('Delete error:',e.message);
     setSyncError('Delete failed');
   }
 }
@@ -828,18 +815,17 @@ function hideLoading(){ const el=document.getElementById('loadingOverlay'); if(e
 
 function showSaveIndicator(){ setSynced(); }
 
-function resetToOriginal() {
-  if (!confirm('This will DELETE ALL orders from the database and restore the original data. Are you sure?')) return;
+function resetToOriginal(){
+  if(!confirm('This will DELETE ALL orders from the database and restore the original data. Are you sure?')) return;
   (async()=>{
     setSyncing('Resetting…');
     try{
-      await fetch(sbUrl('orders?id=gte.0'), { method:'DELETE', headers:SB_HEADERS });
-      ORDERS.length=0;
+      await fetch(sbUrl('orders?id=gte.0'),{method:'DELETE',headers:SB_HEADERS});
+      ORDERS.length=0; _nextId=0;
       await seedDatabase();
-      refresh();
-      setSynced();
+      refresh(); setSynced();
       alert('✓ Reset complete!');
-    }catch(e){ setSyncError('Reset failed'); }
+    }catch(e){setSyncError('Reset failed');}
   })();
 }
 
@@ -1000,14 +986,20 @@ function renderOpenOrders(){
     return `<div class="open-order-card" onclick="openDetail(${o._id})">
       <div class="open-order-info">
         <div class="open-order-name">${o.Task}</div>
-        <div class="open-order-client">${o.Client||'No client set'} · ${o.Year}${o.PickupLocation?' · '+o.PickupLocation:''}</div>
+        <div class="open-order-client">${o.Client||'No client set'} · ${o.Year}</div>
+        ${(o.Pickup||o.PickupLocation)?`<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+          <span style="font-size:13px;">📍</span>
+          ${o.PickupLocation?`<span style="font-size:12px;font-weight:700;color:var(--brown);">${o.PickupLocation}</span>`:''}
+          ${o.Pickup?pickupBadge(o.Pickup):''}
+        </div>`:''}
       </div>
-      ${dueHtml}
-      ${paidBadge(o.Paid)}
-      ${pickupBadge(o.Pickup)}
-      <div style="text-align:right;">
-        <div style="font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--brown)">${fmt$(total)}</div>
-        ${bal>0?`<div style="font-size:11px;color:var(--red);font-weight:600;">owes ${fmt$(bal)}</div>`:'<div style="font-size:11px;color:var(--green);font-weight:600;">✓ paid</div>'}
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+        ${dueHtml}
+        ${paidBadge(o.Paid)}
+        <div style="text-align:right;">
+          <div style="font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--brown)">${fmt$(total)}</div>
+          ${bal>0&&o.Paid!=='Paid'?`<div style="font-size:11px;color:var(--red);font-weight:600;">owes ${fmt$(bal)}</div>`:`<div style="font-size:11px;color:var(--green);font-weight:600;">✓ paid</div>`}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1040,7 +1032,8 @@ function renderWeek(){
       <div class="week-day-num">${d.getDate()}</div>
       ${dayOrders.slice(0,3).map(o=>{
         const cls=o.Status==='Completed'?'done':(daysDiff(o.DueDate)<0?'overdue':'');
-        return `<span class="week-order-pill ${cls}" onclick="event.stopPropagation();openDetail(${o._id})" title="${o.Task}">${o.Task.length>14?o.Task.slice(0,14)+'…':o.Task}</span>`;
+        const tip=o.Task+(o.PickupLocation?' · '+o.PickupLocation:'')+(o.Pickup&&o.Pickup!=='Awaiting pickup'?' ('+o.Pickup+')':'');
+        return `<span class="week-order-pill ${cls}" onclick="event.stopPropagation();openDetail(${o._id})" title="${tip.replace(/"/g,'&quot;')}">${o.Task.length>14?o.Task.slice(0,14)+'…':o.Task}</span>`;
       }).join('')}
       ${dayOrders.length>3?`<span style="font-size:10px;color:var(--amber);font-weight:600">+${dayOrders.length-3} more</span>`:''}
     </div>`;
@@ -1050,7 +1043,11 @@ function renderWeek(){
     const noDateOrders=ORDERS.filter(o=>!o.DueDate&&o.Status!=='Completed');
     if(noDateOrders.length){
       html+=`<div style="grid-column:1/-1;margin-top:12px;background:var(--gray-light);border-radius:10px;padding:12px;"><div style="font-size:12px;font-weight:600;color:var(--brown-light);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">No Due Date Set</div>`;
-      html+=noDateOrders.map(o=>`<span class="week-order-pill no-date" style="display:inline-block;margin:2px 4px 2px 0;" onclick="openDetail(${o._id})">${o.Task}</span>`).join('');
+      html+=noDateOrders.map(o=>{
+        const loc=o.PickupLocation?` · ${o.PickupLocation}`:'';
+        const label=(o.Task.length>16?o.Task.slice(0,16)+'…':o.Task)+loc;
+        return `<span class="week-order-pill no-date" style="display:inline-block;margin:2px 4px 2px 0;" onclick="openDetail(${o._id})" title="${o.Task+(loc)}">${label}</span>`;
+      }).join('');
       html+='</div>';
     }
   }
@@ -1063,11 +1060,28 @@ function showDayOrders(dateStr,label){
   const t=$('weekDayTitle');const el=$('weekDayOrders');
   if(!orders.length){t.style.display='none';el.innerHTML='';return;}
   t.style.display='flex';t.textContent=label+' — '+orders.length+' order'+(orders.length>1?'s':'');
-  el.innerHTML=orders.map(o=>`<div class="open-order-card" onclick="openDetail(${o._id})">
-    <div class="open-order-info"><div class="open-order-name">${o.Task}</div><div class="open-order-client">${o.Client||'No client'}</div></div>
-    ${statusBadge(o.Status)}${paidBadge(o.Paid)}
-    <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--brown)">${fmt$(o.Amount)}</div>
-  </div>`).join('');
+  el.innerHTML=orders.map(o=>{
+    const bal=orderBalance(o);
+    const total=(o.Amount||0)+(o.DeliveryFee||0);
+    const locationStr=[o.Pickup,o.PickupLocation].filter(Boolean).join(' · ');
+    return `<div class="open-order-card" onclick="openDetail(${o._id})">
+      <div class="open-order-info">
+        <div class="open-order-name">${o.Task}</div>
+        <div class="open-order-client">${o.Client||'No client'}${o.Year?' · '+o.Year:''}</div>
+        ${locationStr?`<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:5px;">
+          <span style="font-size:13px;">📍</span>
+          <span style="color:var(--brown-light);font-weight:600;">${locationStr}</span>
+        </div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+        ${statusBadge(o.Status)}
+        ${paidBadge(o.Paid)}
+        ${pickupBadge(o.Pickup)}
+        <div style="font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--brown)">${fmt$(total)}</div>
+        ${o.Paid!=='Paid'&&bal>0?`<div style="font-size:11px;color:var(--red);font-weight:600;">owes ${fmt$(bal)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // TABLE RENDERING
