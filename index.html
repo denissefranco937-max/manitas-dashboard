@@ -15,7 +15,7 @@
   .tabs{display:flex;background:var(--cream2);border-bottom:1.5px solid var(--border);padding:0 22px;overflow-x:auto;}
   .tab{padding:13px 18px;font-size:13px;font-weight:500;color:var(--brown-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;user-select:none;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;white-space:nowrap;}
   .tab:hover{color:var(--brown);}.tab.active{color:var(--pink);border-bottom-color:var(--pink);}
-  main{padding:22px 26px;max-width:1400px;margin:0 auto;}
+  main{padding:22px 26px;max-width:var(--layout-width,1400px);margin-left:var(--layout-ml,auto);margin-right:var(--layout-mr,auto);min-width:0;}
   .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
   .metric-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;}
   .metric-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(92,58,42,0.14);}
@@ -31,8 +31,8 @@
   .controls input[type=text]::placeholder{color:#bbb;}
   .btn-new{margin-left:auto;background:var(--pink);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;}
   .btn-new:hover{background:var(--pink-dark);}
-  .table-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
+  .table-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow-x:auto;overflow-y:hidden;box-shadow:var(--shadow);-webkit-overflow-scrolling:touch;}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px;}
   thead tr{background:var(--cream2);border-bottom:1.5px solid var(--border);}
   th{text-align:left;padding:11px 13px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;}
   th:hover{color:var(--pink);}
@@ -171,6 +171,7 @@
   <div style="display:flex;align-items:center;gap:8px;">
     <span id="saveIndicator" style="font-size:11px;color:rgba(255,255,255,0.6);display:flex;align-items:center;"><span class="sync-dot" id="syncDot"></span><span id="syncText">Connected</span></span>
     <button onclick="resetToOriginal()" style="font-size:11px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;" title="Clear all local changes and restore original data">↺ Reset data</button>
+    <button onclick="shareLink()" id="shareBtn" style="font-size:11px;background:var(--pink);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;" title="Copy dashboard link">🔗 Share Link</button>
   </div>
 </div>
 </header>
@@ -215,9 +216,12 @@
       <th onclick="sortTable('overview','Task')">Order ↕</th>
       <th onclick="sortTable('overview','Client')">Client ↕</th>
       <th onclick="sortTable('overview','DueDate')">Due Date ↕</th>
-      <th onclick="sortTable('overview','Amount')">Amount ↕</th>
-      <th onclick="sortTable('overview','Status')">Status ↕</th>
+      <th onclick="sortTable('overview','Amount')">Total ↕</th>
       <th onclick="sortTable('overview','Paid')">Payment ↕</th>
+      <th onclick="sortTable('overview','Status')">Status ↕</th>
+      <th>Balance Due ↕</th>
+      <th onclick="sortTable('overview','Pickup')">Pickup ↕</th>
+      <th onclick="sortTable('overview','PickupLocation')">Location ↕</th>
     </tr></thead><tbody id="overviewTbody"></tbody></table>
     <div class="pagination" id="overviewPag"></div>
   </div>
@@ -289,9 +293,12 @@
       <th onclick="sortTable('all','Client')">Client ↕</th>
       <th onclick="sortTable('all','Year')">Year ↕</th>
       <th onclick="sortTable('all','DueDate')">Due Date ↕</th>
-      <th onclick="sortTable('all','Amount')">Amount ↕</th>
-      <th onclick="sortTable('all','Status')">Status ↕</th>
+      <th onclick="sortTable('all','Amount')">Total ↕</th>
       <th onclick="sortTable('all','Paid')">Payment ↕</th>
+      <th onclick="sortTable('all','Status')">Status ↕</th>
+      <th>Balance Due</th>
+      <th onclick="sortTable('all','Pickup')">Pickup ↕</th>
+      <th onclick="sortTable('all','PickupLocation')">Location ↕</th>
     </tr></thead><tbody id="allTbody"></tbody></table>
     <div class="pagination" id="allPag"></div>
   </div>
@@ -363,6 +370,115 @@
     </div>
 
     <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title" style="margin-bottom:18px;">🎨 Chart Colors</div>
+      <p style="font-size:13px;color:var(--brown-light);margin-bottom:16px;">Pick custom hex colors for each chart element. Click a swatch to open the color picker.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label>💚 Paid</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_paid" value="#3a7d5e" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_paid_hex" placeholder="#3a7d5e" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_paid')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>❤️ Not Paid</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_notPaid" value="#c0392b" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_notPaid_hex" placeholder="#c0392b" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_notPaid')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>🟡 Deposit</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_deposit" value="#c47d1a" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_deposit_hex" placeholder="#c47d1a" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_deposit')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>✅ Completed</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_completed" value="#3a7d5e" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_completed_hex" placeholder="#3a7d5e" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_completed')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>⬜ Not Started</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_notStarted" value="#888888" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_notStarted_hex" placeholder="#888888" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_notStarted')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>🔄 In Progress</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_inProgress" value="#c47d1a" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_inProgress_hex" placeholder="#c47d1a" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_inProgress')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>📊 Revenue Bars</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_revenue" value="#e8527a" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_revenue_hex" placeholder="#e8527a" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_revenue')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>👥 Top Clients</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_clients" value="#5c3a2a" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_clients_hex" placeholder="#5c3a2a" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_clients')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>⭐ Active Year Bar</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_barHighlight" value="#e8527a" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_barHighlight_hex" placeholder="#e8527a" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_barHighlight')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="form-group"><label>📅 Other Year Bars</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cc_barOther" value="#8c6555" style="width:44px;height:36px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;">
+            <input type="text" id="cc_barOther_hex" placeholder="#8c6555" maxlength="7"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;color:var(--brown);outline:none;"
+              oninput="syncHex(this,'cc_barOther')" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveSettings()" style="margin-top:14px;">Apply Chart Colors</button>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title" style="margin-bottom:18px;">↔️ Layout Width</div>
+      <p style="font-size:13px;color:var(--brown-light);margin-bottom:16px;">Drag the slider to set how wide the dashboard content is. Use alignment to shift left or right when not full screen.</p>
+      <div class="form-group">
+        <label>Content Width — <span id="s_widthval">1400px</span></label>
+        <input type="range" id="s_width" min="600" max="1800" step="50" value="1400"
+          style="width:100%;accent-color:var(--pink);cursor:pointer;"
+          oninput="document.getElementById('s_widthval').textContent=this.value+'px'; previewWidth(this.value)">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--brown-light);margin-top:4px;"><span>600px (narrow)</span><span>1800px (wide)</span></div>
+      </div>
+      <div class="form-group">
+        <label>Alignment</label>
+        <select id="s_align" style="font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;width:100%;color:var(--brown);outline:none;" onchange="previewAlign(this.value)">
+          <option value="center">Center (default)</option>
+          <option value="left">Left — push content to the left</option>
+          <option value="right">Right — push content to the right</option>
+        </select>
+      </div>
+      <button class="btn-save" onclick="saveSettings()" style="margin-top:6px;">Save Layout</button>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:20px;">
       <div class="chart-title" style="margin-bottom:18px;">📅 Manage Years</div>
       <p style="font-size:13px;color:var(--brown-light);margin-bottom:14px;">Add a new year to track orders — it will appear in the year dropdown when creating or editing orders, and as a filter in All Orders.</p>
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
@@ -370,6 +486,13 @@
         <button class="btn-save" onclick="addYear()">+ Add Year</button>
       </div>
       <div id="yearsList" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title" style="margin-bottom:18px;">🔽 Customize Dropdown Menus</div>
+      <p style="font-size:13px;color:var(--brown-light);margin-bottom:16px;">Add, remove, or rename options in any dropdown. Changes save automatically.</p>
+
+      <div id="dropdownEditorList"></div>
     </div>
 
     <div class="chart-card" style="margin-bottom:20px;">
@@ -403,6 +526,21 @@
 </div>
 
 </main>
+
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">🔗 Share Dashboard</div>
+      <button class="modal-close" onclick="closeModal('shareModal')">✕</button>
+    </div>
+    <div id="shareModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('shareModal')">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- DETAIL MODAL -->
 <div class="modal-overlay" id="detailModal">
@@ -451,7 +589,20 @@
       <div class="form-group"><label>Status</label><select id="f_status"><option value="Not started">Not Started</option><option value="In progress">In Progress</option><option value="Completed">Completed</option></select></div>
       <div class="form-group"><label>Payment</label><select id="f_paid"><option value="Not paid">Not Paid</option><option value="Deposit">Deposit</option><option value="Paid">Paid</option></select></div>
     </div>
-    <div class="form-group"><label>Pickup / Delivery?</label><select id="f_pickup"><option value="No">No Pickup</option><option value="Yes">Pickup</option><option value="Delivery">Delivery</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>Pickup Status</label><select id="f_pickup">
+        <option value="Awaiting pickup">Awaiting Pickup</option>
+        <option value="Picked up">Picked Up</option>
+        <option value="Mailed">Mailed</option>
+      </select></div>
+      <div class="form-group"><label>Pickup Location</label><select id="f_pickuplocation">
+        <option value="">— Select —</option>
+        <option value="Work">Work</option>
+        <option value="Perris">Perris</option>
+        <option value="Riverside">Riverside</option>
+        <option value="Mail">Mail</option>
+      </select></div>
+    </div>
     <div class="form-group"><label>Notes</label><textarea id="f_notes" placeholder="Extra details, quantity, deposit info…"></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('editModal')">Cancel</button>
@@ -490,7 +641,8 @@ function dbToOrder(row){
     Year: row.year || 2026,
     Status: row.status || 'Not started',
     Paid: row.paid || 'Not paid',
-    Pickup: row.pickup || 'No',
+    Pickup: row.pickup || 'Awaiting pickup',
+    PickupLocation: row.pickup_location || '',
     Notes: row.notes || ''
   };
 }
@@ -508,6 +660,7 @@ function orderToDb(o){
     status: o.Status,
     paid: o.Paid,
     pickup: o.Pickup,
+    pickup_location: o.PickupLocation||'',
     notes: o.Notes
   };
 }
@@ -707,6 +860,17 @@ function daysDiff(dateStr){if(!dateStr)return null;const d=new Date(dateStr);d.s
 function statusBadge(s){const m={'Completed':'badge-completed','Not started':'badge-not-started','In progress':'badge-in-progress'};return `<span class="badge ${m[s]||'badge-not-started'}">${s||'Unknown'}</span>`;}
 function paidBadge(p){const m={'Paid':'badge-paid','Not paid':'badge-not-paid','Deposit':'badge-deposit'};return `<span class="badge ${m[p]||'badge-not-paid'}">${p||'Unknown'}</span>`;}
 function initials(name){if(!name)return '?';const w=name.trim().split(' ');return (w[0][0]+(w[1]?w[1][0]:'')).toUpperCase();}
+function pickupBadge(p){
+  const m={
+    'Picked up':'badge-completed',
+    'Mailed':'badge-paid',
+    'Awaiting pickup':'badge-deposit',
+    'Yes':'badge-completed',
+    'No':'badge-not-started',
+    'Delivery':'badge-paid'
+  };
+  return `<span class="badge ${m[p]||'badge-not-started'}">${p||'—'}</span>`;
+}
 
 // TABS
 function showTab(name){
@@ -831,14 +995,20 @@ function renderOpenOrders(){
       else if(d<=7)dueHtml=`<span class="open-order-due due-soon">Due ${fmtDate(o.DueDate)} (${d}d)</span>`;
       else dueHtml=`<span class="open-order-due due-ok">Due ${fmtDate(o.DueDate)}</span>`;
     }
+    const total=(o.Amount||0)+(o.DeliveryFee||0);
+    const bal=orderBalance(o);
     return `<div class="open-order-card" onclick="openDetail(${o._id})">
       <div class="open-order-info">
         <div class="open-order-name">${o.Task}</div>
-        <div class="open-order-client">${o.Client||'No client set'} · ${o.Year}</div>
+        <div class="open-order-client">${o.Client||'No client set'} · ${o.Year}${o.PickupLocation?' · '+o.PickupLocation:''}</div>
       </div>
       ${dueHtml}
       ${paidBadge(o.Paid)}
-      <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--brown)">${fmt$(o.Amount)}</div>
+      ${pickupBadge(o.Pickup)}
+      <div style="text-align:right;">
+        <div style="font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--brown)">${fmt$(total)}</div>
+        ${bal>0?`<div style="font-size:11px;color:var(--red);font-weight:600;">owes ${fmt$(bal)}</div>`:'<div style="font-size:11px;color:var(--green);font-weight:600;">✓ paid</div>'}
+      </div>
     </div>`;
   }).join('');
 }
@@ -921,12 +1091,19 @@ function renderTable(tbodyId,pagId,orders,page,cols){
   const tbody=$(tbodyId);
   if(!orders.length){tbody.innerHTML=`<tr><td colspan="${cols.length}" class="empty-state"><p>No orders found.</p></td></tr>`;$(pagId).innerHTML='';return;}
   tbody.innerHTML=slice.map(o=>{
+    const total=(o.Amount||0)+(o.DeliveryFee||0);
+    const bal=orderBalance(o);
+    const balColor=bal>0?'var(--red)':'var(--green)';
+    const balText=bal===0&&(o.Deposit||0)>0?'✓ Paid':'$'+bal.toFixed(2);
     const cells=cols.map(col=>{
       if(col==='Status')return `<td>${statusBadge(o.Status)}</td>`;
       if(col==='Paid')return `<td>${paidBadge(o.Paid)}</td>`;
-      if(col==='Amount')return `<td>${fmt$(o.Amount)}</td>`;
+      if(col==='Amount')return `<td style="font-weight:600;">${fmt$(total)}</td>`;
       if(col==='DueDate')return `<td>${fmtDate(o.DueDate)}</td>`;
       if(col==='Task')return `<td class="task-name">${o.Task}</td>`;
+      if(col==='Balance')return `<td style="font-weight:700;color:${balColor};">${balText}</td>`;
+      if(col==='Pickup')return `<td>${pickupBadge(o.Pickup)}</td>`;
+      if(col==='PickupLocation')return `<td>${o.PickupLocation||'—'}</td>`;
       return `<td>${o[col]||'—'}</td>`;
     });
     return `<tr onclick="openDetail(${o._id})">${cells.join('')}</tr>`;
@@ -942,12 +1119,12 @@ function changePage(tbodyId,p){if(tbodyId==='overviewTbody'){overviewPage=p;rend
 function renderOverviewTable(){
   const base=activeYear==='all'?ORDERS:ORDERS.filter(o=>o.Year===activeYear);
   const data=filterOrders(base,'overviewSearch',null,'overviewStatusFilter','overviewPaidFilter');
-  const cols=activeYear==='all'?['Task','Client','Year','DueDate','Amount','Status','Paid']:['Task','Client','DueDate','Amount','Status','Paid'];
+  const cols=activeYear==='all'?['Task','Client','Year','DueDate','Amount','Paid','Status','Balance','Pickup','PickupLocation']:['Task','Client','DueDate','Amount','Paid','Status','Balance','Pickup','PickupLocation'];
   renderTable('overviewTbody','overviewPag',sortOrders(data,overviewSort.key,overviewSort.dir),overviewPage,cols);
 }
 function renderAllTable(){
   const data=filterOrders(ORDERS,'allSearch','allYearFilter','allStatusFilter','allPaidFilter');
-  renderTable('allTbody','allPag',sortOrders(data,allSort.key,allSort.dir),allPage,['Task','Client','Year','DueDate','Amount','Status','Paid']);
+  renderTable('allTbody','allPag',sortOrders(data,allSort.key,allSort.dir),allPage,['Task','Client','Year','DueDate','Amount','Paid','Status','Balance','Pickup','PickupLocation']);
 }
 function sortTable(view,key){
   if(view==='overview'){if(overviewSort.key===key)overviewSort.dir*=-1;else{overviewSort.key=key;overviewSort.dir=1;}renderOverviewTable();}
@@ -985,7 +1162,9 @@ function openDetail(id){
     </div>
     ${row('Client',o.Client||'—')}${row('Due Date',fmtDate(o.DueDate))}${row('Year',o.Year)}
     ${row('Status',statusBadge(o.Status))}${row('Payment',paidBadge(o.Paid))}
-    ${row('Pickup',o.Pickup||'—')}${o.Notes?row('Notes',o.Notes):''}`;
+    ${row('Pickup Status', pickupBadge(o.Pickup))}
+    ${o.PickupLocation?row('Location',o.PickupLocation):''}
+    ${o.Notes?row('Notes',o.Notes):''}`;
   $('detailModal').classList.add('open');
 }
 function row(label,val){return `<div class="modal-detail-row"><div class="modal-detail-label">${label}</div><div class="modal-detail-value">${val}</div></div>`;}
@@ -1008,7 +1187,7 @@ function deleteCurrentOrder(){
 }
 
 // NEW/EDIT ORDER
-function openNewOrderModal(){currentOrderId=null;populateEditForm({Task:'',Client:'',DueDate:'',Amount:0,DeliveryFee:0,Deposit:0,Year:2026,Status:'Not started',Paid:'Not paid',Pickup:'No',Notes:''});$('editModalTitle').textContent='New Order';$('editModal').classList.add('open');}
+function openNewOrderModal(){currentOrderId=null;populateEditForm({Task:'',Client:'',DueDate:'',Amount:0,DeliveryFee:0,Deposit:0,Year:2026,Status:'Not started',Paid:'Not paid',Pickup:'Awaiting pickup',PickupLocation:'',Notes:''});$('editModalTitle').textContent='New Order';$('editModal').classList.add('open');}
 function populateEditForm(o){
   $('f_task').value=o.Task||'';
   $('f_client').value=o.Client||'';
@@ -1019,7 +1198,8 @@ function populateEditForm(o){
   $('f_year').value=String(o.Year||2026);
   $('f_status').value=o.Status||'Not started';
   $('f_paid').value=o.Paid||'Not paid';
-  $('f_pickup').value=o.Pickup||'No';
+  $('f_pickup').value=o.Pickup||'Awaiting pickup';
+  $('f_pickuplocation').value=o.PickupLocation||'';
   $('f_notes').value=o.Notes||'';
   updateBalanceSummary();
 }
@@ -1052,6 +1232,7 @@ function saveOrder(){
     Status:$('f_status').value,
     Paid:$('f_paid').value,
     Pickup:$('f_pickup').value,
+    PickupLocation:$('f_pickuplocation').value,
     Notes:$('f_notes').value.trim()
   };
   if(currentOrderId===null){
@@ -1102,10 +1283,15 @@ function loadClientProfile(clientName){
     <div class="client-profile">
       <div class="client-profile-header">
         <div class="client-avatar">${initials(clientName)}</div>
-        <div>
+        <div style="flex:1;">
           <div class="client-name">${clientName}</div>
           <div style="font-size:13px;color:rgba(255,255,255,0.6);">${cOrders.length} total order${cOrders.length>1?'s':''}</div>
         </div>
+        <button onclick="editClientNote('${clientName.replace(/'/g,"\\'")}')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">✏️ Notes</button>
+      </div>
+      <div id="clientNoteBar_${clientName.replace(/[^a-z0-9]/gi,'_')}" style="background:var(--amber-light);border-bottom:1px solid rgba(196,125,26,.2);padding:12px 20px;display:${getClientNote(clientName)?'block':'none'};">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--amber);margin-bottom:4px;">Client Notes</div>
+        <div style="font-size:13px;color:var(--brown);">${getClientNote(clientName)||''}</div>
       </div>
       <div class="client-stats">
         <div class="client-stat"><div class="client-stat-label">Total Billed</div><div class="client-stat-value">${fmt$(total)}</div></div>
@@ -1208,29 +1394,54 @@ function renderCharts(){
   const o26=activeYear==='all'?ORDERS:ORDERS.filter(o=>o.Year===activeYear);
   const o25=activeYear==='all'?[]:ORDERS.filter(o=>o.Year===activeYear-1);
   const chartYear=activeYear==='all'?'All':activeYear;
-  // Revenue by year chart — show all years
+  const cc=APP_SETTINGS.chartColors||{};
+  const C={
+    paid:cc.paid||'#3a7d5e', notPaid:cc.notPaid||'#c0392b', deposit:cc.deposit||'#c47d1a',
+    completed:cc.completed||'#3a7d5e', notStarted:cc.notStarted||'#888888', inProgress:cc.inProgress||'#c47d1a',
+    revenue:cc.revenue||'#e8527a', clients:cc.clients||'#5c3a2a',
+    barHighlight:cc.barHighlight||'#e8527a', barOther:cc.barOther||'#8c6555'
+  };
+  // Revenue by year
   const allYearsSorted=[...new Set(YEARS)].sort();
   const revByYear=allYearsSorted.map(y=>Math.round(ORDERS.filter(o=>o.Year===y).reduce((s,o)=>s+o.Amount,0)));
-  const barColors=allYearsSorted.map(y=>y===activeYear||activeYear==='all'?'var(--pink)':'#8c6555');
+  const barColors=allYearsSorted.map(y=>y===activeYear||activeYear==='all'?C.barHighlight:C.barOther);
   new Chart($('chartRevYear'),{type:'bar',data:{labels:allYearsSorted.map(String),datasets:[{label:'Revenue',data:revByYear,backgroundColor:barColors,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:activeYear!=='all',text:'Highlighted: '+chartYear,color:'var(--brown-light)',font:{size:11}}},scales:{y:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}}}}});
   const paid26=o26.filter(o=>o.Paid==='Paid').length,np26=o26.filter(o=>o.Paid==='Not paid').length,dep26=o26.filter(o=>o.Paid==='Deposit').length;
-  new Chart($('chartPaid'),{type:'doughnut',data:{labels:['Paid ('+chartYear+')','Not Paid','Deposit'],datasets:[{data:[paid26,np26,dep26],backgroundColor:['#3a7d5e','#c0392b','#c47d1a'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:12}}}}}});
+  new Chart($('chartPaid'),{type:'doughnut',data:{labels:['Paid','Not Paid','Deposit'],datasets:[{data:[paid26,np26,dep26],backgroundColor:[C.paid,C.notPaid,C.deposit],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:12}}}}}});
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],monthly=new Array(12).fill(0);
   o26.forEach(o=>{if(!o.DueDate)return;const m=parseInt(o.DueDate.split('-')[1])-1;if(m>=0&&m<12)monthly[m]+=o.Amount;});
-  new Chart($('chartMonthly'),{type:'bar',data:{labels:months,datasets:[{label:'Revenue '+chartYear,data:monthly.map(Math.round),backgroundColor:'var(--pink)',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}},x:{ticks:{autoSkip:false}}}}});
+  new Chart($('chartMonthly'),{type:'bar',data:{labels:months,datasets:[{label:'Revenue '+chartYear,data:monthly.map(Math.round),backgroundColor:C.revenue,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}},x:{ticks:{autoSkip:false}}}}});
   const comp=o26.filter(o=>o.Status==='Completed').length,notst=o26.filter(o=>o.Status==='Not started').length,inprog=o26.filter(o=>o.Status==='In progress').length;
-  new Chart($('chartStatus'),{type:'doughnut',data:{labels:['Completed','Not Started','In Progress'],datasets:[{data:[comp,notst,inprog],backgroundColor:['#3a7d5e','#888','#c47d1a'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:12}}}}}});
+  new Chart($('chartStatus'),{type:'doughnut',data:{labels:['Completed','Not Started','In Progress'],datasets:[{data:[comp,notst,inprog],backgroundColor:[C.completed,C.notStarted,C.inProgress],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:12}}}}}});
   const clientMap={};ORDERS.forEach(o=>{const c=(o.Client||'Unknown').trim();clientMap[c]=(clientMap[c]||0)+o.Amount;});
   const top=Object.entries(clientMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const chartH=Math.max(260,top.length*40+80);$('chartClients').parentElement.style.height=chartH+'px';
-  new Chart($('chartClients'),{type:'bar',data:{labels:top.map(x=>x[0].length>18?x[0].slice(0,18)+'…':x[0]),datasets:[{label:'Revenue',data:top.map(x=>Math.round(x[1])),backgroundColor:'#5c3a2a',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}}}}}); 
+  new Chart($('chartClients'),{type:'bar',data:{labels:top.map(x=>x[0].length>18?x[0].slice(0,18)+'…':x[0]),datasets:[{label:'Revenue',data:top.map(x=>Math.round(x[1])),backgroundColor:C.clients,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}}}}}); 
 }
 
 
 // SETTINGS
 const SETTINGS_KEY='manitas_settings_v1';
 const YEARS_KEY='manitas_years_v1';
-let APP_SETTINGS={bizName:'Manitas Creations',tagline:'Order Management Dashboard',color:'#e8527a'};
+let APP_SETTINGS={
+  bizName:'Manitas Creations',
+  tagline:'Order Management Dashboard',
+  color:'#e8527a',
+  layoutWidth: 1400,
+  layoutAlign: 'center',
+  chartColors:{
+    paid:'#3a7d5e',
+    notPaid:'#c0392b',
+    deposit:'#c47d1a',
+    completed:'#3a7d5e',
+    notStarted:'#888888',
+    inProgress:'#c47d1a',
+    revenue:'#e8527a',
+    clients:'#5c3a2a',
+    barHighlight:'#e8527a',
+    barOther:'#8c6555'
+  }
+};
 let YEARS=[2025,2026];
 
 function loadSettings(){
@@ -1257,9 +1468,19 @@ function applySettings(){
   // Accent color
   const r=document.documentElement;
   r.style.setProperty('--pink', APP_SETTINGS.color);
-  // Darken for hover
   r.style.setProperty('--pink-dark', shadeColor(APP_SETTINGS.color,-20));
   r.style.setProperty('--pink-light', shadeColor(APP_SETTINGS.color,85));
+  // Layout width & alignment
+  const w=APP_SETTINGS.layoutWidth||1400;
+  const align=APP_SETTINGS.layoutAlign||'center';
+  r.style.setProperty('--layout-width', w+'px');
+  if(align==='left'){ r.style.setProperty('--layout-ml','0'); r.style.setProperty('--layout-mr','auto'); }
+  else if(align==='right'){ r.style.setProperty('--layout-ml','auto'); r.style.setProperty('--layout-mr','0'); }
+  else { r.style.setProperty('--layout-ml','auto'); r.style.setProperty('--layout-mr','auto'); }
+  // Update width slider display if visible
+  const wv=$('s_widthval'); if(wv) wv.textContent=w+'px';
+  const ws=$('s_width'); if(ws) ws.value=w;
+  const al=$('s_align'); if(al) al.value=align;
   // Rebuild year dropdowns
   rebuildYearDropdowns();
 }
@@ -1290,7 +1511,19 @@ function renderSettings(){
   $('s_bizname').value=APP_SETTINGS.bizName;
   $('s_tagline').value=APP_SETTINGS.tagline;
   $('s_color').value=APP_SETTINGS.color;
+  // Chart colors
+  const cc=APP_SETTINGS.chartColors||{};
+  ['paid','notPaid','deposit','completed','notStarted','inProgress','revenue','clients','barHighlight','barOther'].forEach(function(k){
+    const el=$('cc_'+k); if(el&&cc[k]) el.value=cc[k];
+  });
+  // Layout
+  const w=APP_SETTINGS.layoutWidth||1400;
+  const al=$('s_align'); if(al) al.value=APP_SETTINGS.layoutAlign||'center';
+  const ws=$('s_width'); if(ws) ws.value=w;
+  const wv=$('s_widthval'); if(wv) wv.textContent=w+'px';
   renderYearsList();
+  renderDropdownEditor();
+  setTimeout(syncColorPickersToHex, 50);
 }
 
 function renderYearsList(){
@@ -1330,10 +1563,20 @@ function saveSettings(){
   APP_SETTINGS.bizName=$('s_bizname').value.trim()||'Manitas Creations';
   APP_SETTINGS.tagline=$('s_tagline').value.trim()||'Order Management Dashboard';
   APP_SETTINGS.color=$('s_color').value;
+  // Chart colors
+  const cc={};
+  ['paid','notPaid','deposit','completed','notStarted','inProgress','revenue','clients','barHighlight','barOther'].forEach(function(k){
+    const el=$('cc_'+k); if(el) cc[k]=el.value;
+  });
+  APP_SETTINGS.chartColors=cc;
+  // Layout
+  APP_SETTINGS.layoutWidth=parseInt($('s_width').value)||1400;
+  APP_SETTINGS.layoutAlign=$('s_align').value||'center';
   try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(APP_SETTINGS));}catch(e){}
   applySettings();
+  chartsDrawn=false;
+  if(currentTab==='charts') renderCharts();
   showSaveIndicator();
-  // Flash confirmation
   const btn=event.target;
   btn.textContent='✓ Saved!';
   setTimeout(()=>btn.textContent='Save Changes',1800);
@@ -1384,6 +1627,256 @@ function importData(e){
 }
 
 
+
+// SHARE LINK
+function shareLink(){
+  const url = window.location.href;
+  const isLocalFile = url.startsWith('file://');
+
+  if(isLocalFile){
+    // File opened locally — show instructions modal instead
+    showShareModal();
+  } else {
+    // Has a real URL — copy it
+    navigator.clipboard.writeText(url).then(()=>{
+      const btn = document.getElementById('shareBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.style.background = 'var(--green)';
+      setTimeout(()=>{ btn.textContent = orig; btn.style.background = 'var(--pink)'; }, 2500);
+    }).catch(()=>{
+      // Fallback: show modal with the URL to manually copy
+      showShareModal(url);
+    });
+  }
+}
+
+function showShareModal(url){
+  const isLocal = !url || window.location.href.startsWith('file://');
+  const content = isLocal
+    ? `<div style="margin-bottom:16px;">
+        <div style="background:var(--amber-light);border:1px solid rgba(196,125,26,.3);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:var(--amber);">
+          <strong>You're running this as a local file.</strong><br>To get a shareable link, upload it to one of these free services:
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <a href="https://app.netlify.com/drop" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--cream2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;text-decoration:none;color:var(--brown);transition:background .12s;" onmouseover="this.style.background='var(--pink-light)'" onmouseout="this.style.background='var(--cream2)'">
+            <span style="font-size:22px;">🚀</span>
+            <div><div style="font-weight:600;font-size:14px;">Netlify Drop</div><div style="font-size:12px;color:var(--brown-light);">app.netlify.com/drop — drag & drop, free forever</div></div>
+          </a>
+          <a href="https://github.com" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--cream2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;text-decoration:none;color:var(--brown);transition:background .12s;" onmouseover="this.style.background='var(--pink-light)'" onmouseout="this.style.background='var(--cream2)'">
+            <span style="font-size:22px;">🐙</span>
+            <div><div style="font-weight:600;font-size:14px;">GitHub Pages</div><div style="font-size:12px;color:var(--brown-light);">github.com — permanent free link, e.g. yourname.github.io</div></div>
+          </a>
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--brown-light);text-align:center;">Once uploaded, the Share button will copy the link automatically 🎉</div>
+      </div>`
+    : `<div style="margin-bottom:16px;">
+        <div style="font-size:13px;color:var(--brown-light);margin-bottom:10px;">Your dashboard link:</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" value="${url}" readonly id="shareLinkInput"
+            style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;background:var(--cream2);color:var(--brown);outline:none;">
+          <button onclick="copyShareLink()" class="btn-save" style="white-space:nowrap;">📋 Copy</button>
+        </div>
+        <div id="shareCopied" style="font-size:12px;color:var(--green);font-weight:600;margin-top:8px;display:none;">✓ Copied to clipboard!</div>
+        <div style="margin-top:14px;font-size:12px;color:var(--brown-light);">Share this link with anyone — they'll see your live orders from the database.</div>
+      </div>`;
+
+  document.getElementById('shareModalBody').innerHTML = content;
+  document.getElementById('shareModal').classList.add('open');
+}
+
+function copyShareLink(){
+  const input = document.getElementById('shareLinkInput');
+  if(!input) return;
+  navigator.clipboard.writeText(input.value).then(()=>{
+    const el = document.getElementById('shareCopied');
+    if(el){ el.style.display='block'; setTimeout(()=>el.style.display='none', 2500); }
+  }).catch(()=>{
+    input.select(); document.execCommand('copy');
+    const el = document.getElementById('shareCopied');
+    if(el){ el.style.display='block'; setTimeout(()=>el.style.display='none', 2500); }
+  });
+}
+
+
+// ============================================================
+// DROPDOWN EDITOR
+// ============================================================
+const DROPDOWNS_KEY = 'manitas_dropdowns_v1';
+
+// Default dropdown options — user can customize these
+let DROPDOWN_OPTIONS = {
+  status:   { label: 'Order Status',     options: ['Not started','In progress','Completed'] },
+  paid:     { label: 'Payment Status',   options: ['Not paid','Deposit','Paid'] },
+  pickup:   { label: 'Pickup Status',    options: ['Awaiting pickup','Picked up','Mailed'] },
+  location: { label: 'Pickup Location',  options: ['Work','Perris','Riverside','Mail'] }
+};
+
+function loadDropdowns(){
+  try{
+    const s=localStorage.getItem(DROPDOWNS_KEY);
+    if(s) DROPDOWN_OPTIONS={...DROPDOWN_OPTIONS,...JSON.parse(s)};
+  }catch(e){}
+  rebuildAllDropdowns();
+}
+
+function saveDropdowns(){
+  try{ localStorage.setItem(DROPDOWNS_KEY,JSON.stringify(DROPDOWN_OPTIONS)); }catch(e){}
+}
+
+function rebuildAllDropdowns(){
+  // Status
+  rebuildSelect('f_status', DROPDOWN_OPTIONS.status.options);
+  rebuildSelect('overviewStatusFilter', DROPDOWN_OPTIONS.status.options, true);
+  rebuildSelect('allStatusFilter', DROPDOWN_OPTIONS.status.options, true);
+  rebuildSelect('openStatusFilter', DROPDOWN_OPTIONS.status.options, true);
+  // Paid
+  rebuildSelect('f_paid', DROPDOWN_OPTIONS.paid.options);
+  rebuildSelect('overviewPaidFilter', DROPDOWN_OPTIONS.paid.options, true);
+  rebuildSelect('allPaidFilter', DROPDOWN_OPTIONS.paid.options, true);
+  rebuildSelect('openPaidFilter', DROPDOWN_OPTIONS.paid.options, true);
+  // Pickup
+  rebuildSelect('f_pickup', DROPDOWN_OPTIONS.pickup.options);
+  // Location
+  rebuildSelect('f_pickuplocation', DROPDOWN_OPTIONS.location.options, true);
+}
+
+function rebuildSelect(id, options, addAll=false){
+  const el=$(id); if(!el) return;
+  const cur=el.value;
+  el.innerHTML='';
+  if(addAll){
+    const opt=document.createElement('option');
+    opt.value=''; opt.textContent='All'; el.appendChild(opt);
+  }
+  options.forEach(function(o){
+    const opt=document.createElement('option');
+    opt.value=o; opt.textContent=o; el.appendChild(opt);
+  });
+  if(cur) el.value=cur;
+}
+
+function renderDropdownEditor(){
+  const el=$('dropdownEditorList'); if(!el) return;
+  el.innerHTML = Object.entries(DROPDOWN_OPTIONS).map(function([key,dd]){
+    return `<div style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        ${dd.label}
+        <span style="font-size:11px;font-weight:400;color:var(--brown-light);">(${dd.options.length} options)</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;" id="ddlist_${key}">
+        ${dd.options.map(function(opt,i){
+          return `<div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" value="${opt}" data-key="${key}" data-idx="${i}"
+              style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 11px;border:1.5px solid var(--border);border-radius:7px;background:#fff;color:var(--brown);outline:none;"
+              onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'"
+              onchange="updateDropdownOption(this)">
+            <button onclick="removeDropdownOption('${key}',${i})"
+              style="background:var(--red-light);color:var(--red);border:none;border-radius:7px;padding:7px 11px;cursor:pointer;font-size:14px;font-weight:700;">×</button>
+          </div>`;
+        }).join('')}
+      </div>
+      <button onclick="addDropdownOption('${key}')"
+        style="margin-top:8px;background:var(--cream2);border:1.5px dashed var(--border);color:var(--brown-light);border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;">
+        + Add Option
+      </button>
+    </div>`;
+  }).join('<hr style="border:none;border-top:1px solid var(--border);margin:4px 0 20px;">');
+}
+
+function updateDropdownOption(input){
+  const key=input.dataset.key;
+  const idx=parseInt(input.dataset.idx);
+  const newVal=input.value.trim();
+  if(!newVal){ input.value=DROPDOWN_OPTIONS[key].options[idx]; return; }
+  DROPDOWN_OPTIONS[key].options[idx]=newVal;
+  saveDropdowns();
+  rebuildAllDropdowns();
+}
+
+function removeDropdownOption(key,idx){
+  if(DROPDOWN_OPTIONS[key].options.length<=1){ alert('You need at least one option.'); return; }
+  DROPDOWN_OPTIONS[key].options.splice(idx,1);
+  saveDropdowns();
+  rebuildAllDropdowns();
+  renderDropdownEditor();
+}
+
+function addDropdownOption(key){
+  const val=prompt('New option name:');
+  if(!val||!val.trim()) return;
+  DROPDOWN_OPTIONS[key].options.push(val.trim());
+  saveDropdowns();
+  rebuildAllDropdowns();
+  renderDropdownEditor();
+}
+
+// ============================================================
+// CLIENT NOTES
+// ============================================================
+const CLIENT_NOTES_KEY = 'manitas_client_notes_v1';
+let CLIENT_NOTES = {};
+
+function loadClientNotes(){
+  try{ const s=localStorage.getItem(CLIENT_NOTES_KEY); if(s) CLIENT_NOTES=JSON.parse(s); }catch(e){}
+}
+
+function saveClientNotes(){
+  try{ localStorage.setItem(CLIENT_NOTES_KEY,JSON.stringify(CLIENT_NOTES)); }catch(e){}
+}
+
+function getClientNote(name){
+  return CLIENT_NOTES[name.trim().toLowerCase()]||'';
+}
+
+function editClientNote(clientName){
+  const cur=getClientNote(clientName);
+  const note=prompt('Notes for '+clientName+' (leave blank to clear):', cur);
+  if(note===null) return; // cancelled
+  if(note.trim()){
+    CLIENT_NOTES[clientName.trim().toLowerCase()]=note.trim();
+  } else {
+    delete CLIENT_NOTES[clientName.trim().toLowerCase()];
+  }
+  saveClientNotes();
+  loadClientProfile(clientName); // re-render profile
+}
+
+
+// Sync hex text input ↔ color picker
+function syncHex(textInput, colorId){
+  const val=textInput.value.trim();
+  if(/^#[0-9a-fA-F]{6}$/.test(val)){
+    const el=$(colorId); if(el) el.value=val;
+    textInput.style.borderColor='var(--green)';
+  } else {
+    textInput.style.borderColor=val.length>0?'var(--red)':'var(--border)';
+  }
+}
+
+// Live preview width/align without saving
+function previewWidth(w){
+  document.documentElement.style.setProperty('--layout-width', w+'px');
+}
+function previewAlign(align){
+  const r=document.documentElement;
+  if(align==='left'){ r.style.setProperty('--layout-ml','0'); r.style.setProperty('--layout-mr','auto'); }
+  else if(align==='right'){ r.style.setProperty('--layout-ml','auto'); r.style.setProperty('--layout-mr','0'); }
+  else { r.style.setProperty('--layout-ml','auto'); r.style.setProperty('--layout-mr','auto'); }
+}
+
+// Sync color pickers → hex text inputs when settings tab opens
+function syncColorPickersToHex(){
+  ['paid','notPaid','deposit','completed','notStarted','inProgress','revenue','clients','barHighlight','barOther'].forEach(function(k){
+    const picker=$('cc_'+k);
+    const hexIn=$('cc_'+k+'_hex');
+    if(picker&&hexIn){
+      hexIn.value=picker.value;
+      picker.addEventListener('input',function(){ hexIn.value=picker.value; });
+    }
+  });
+}
+
 // INIT
 function refresh(){
   renderYearSwitcher();renderMetrics();renderOverviewTable();
@@ -1394,6 +1887,8 @@ function refresh(){
 }
 document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');});
 loadSettings();
+loadDropdowns();
+loadClientNotes();
 $('todayDate').textContent=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 // Boot: show data immediately, sync with DB in background
 (async function boot(){
