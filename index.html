@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1094,8 +1093,9 @@ function renderTable(tbodyId,pagId,orders,page,cols){
   tbody.innerHTML=slice.map(o=>{
     const total=(o.Amount||0)+(o.DeliveryFee||0);
     const bal=orderBalance(o);
-    const balColor=bal>0?'var(--red)':'var(--green)';
-    const balText=bal===0&&(o.Deposit||0)>0?'✓ Paid':'$'+bal.toFixed(2);
+    // Color based on payment status: Paid = black, Not paid/Deposit = red
+    const balColor=o.Paid==='Paid'?'var(--brown)':'var(--red)';
+    const balText=o.Paid==='Paid'?'Paid':'$'+bal.toFixed(2);
     const cells=cols.map(col=>{
       if(col==='Status')return `<td>${statusBadge(o.Status)}</td>`;
       if(col==='Paid')return `<td>${paidBadge(o.Paid)}</td>`;
@@ -1142,8 +1142,8 @@ function openDetail(id){
   const depAmt=o.Deposit||0;
   const totalAmt=baseAmt+delivAmt;
   const balanceAmt=Math.max(0,totalAmt-depAmt);
-  const balanceColor=balanceAmt>0?'var(--red)':'var(--green)';
-  const balanceText=balanceAmt===0&&depAmt>0?'✓ Paid in full':'$'+balanceAmt.toFixed(2);
+  const balanceColor=o.Paid==='Paid'?'var(--brown)':'var(--red)';
+  const balanceText=o.Paid==='Paid'?'Paid in full':'$'+balanceAmt.toFixed(2);
   $('detailBody').innerHTML=`
     <div style="background:var(--cream2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
