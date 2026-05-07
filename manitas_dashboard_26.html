@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manitas Creations — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=DM+Sans:wght@400;500;600&display=swap');
+  :root{--pink:#e8527a;--pink-light:#fce8ef;--pink-dark:#b03359;--cream:#fdf8f3;--cream2:#f5ede4;--brown:#5c3a2a;--brown-light:#8c6555;--green:#3a7d5e;--green-light:#e6f5ee;--amber:#c47d1a;--amber-light:#fef4e0;--red:#c0392b;--red-light:#fdecea;--blue:#2563a8;--blue-light:#e8f0fb;--gray:#888;--gray-light:#f0ece8;--border:rgba(92,58,42,0.12);--shadow:0 2px 16px rgba(92,58,42,0.10);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh;}
+  header{background:var(--brown);color:var(--cream);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .logo{font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:#fff;}.logo span{color:var(--pink);}
+  .header-meta{font-size:12px;color:rgba(255,255,255,0.5);}
+  .tabs{display:flex;background:var(--cream2);border-bottom:1.5px solid var(--border);padding:0 22px;overflow-x:auto;}
+  .tab{padding:13px 18px;font-size:13px;font-weight:500;color:var(--brown-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;user-select:none;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+  .tab:hover{color:var(--brown);}.tab.active{color:var(--pink);border-bottom-color:var(--pink);}
+  main{padding:22px 26px;max-width:1400px;margin:0 auto;}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
+  .metric-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  .metric-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(92,58,42,0.14);}
+  .metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .metric-card.pink::before{background:var(--pink);}.metric-card.green::before{background:var(--green);}.metric-card.amber::before{background:var(--amber);}.metric-card.red::before{background:var(--red);}.metric-card.brown::before{background:var(--brown);}.metric-card.blue::before{background:var(--blue);}
+  .metric-label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--brown-light);margin-bottom:7px;font-weight:600;}
+  .metric-value{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:var(--brown);line-height:1;}
+  .metric-sub{font-size:11px;color:var(--gray);margin-top:4px;}
+  .metric-click-hint{font-size:10px;color:var(--pink);margin-top:5px;font-weight:600;}
+  .controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+  .controls input[type=text],.controls select{font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 13px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--brown);outline:none;transition:border-color .15s;}
+  .controls input[type=text]{min-width:190px;}.controls input[type=text]:focus,.controls select:focus{border-color:var(--pink);}
+  .controls input[type=text]::placeholder{color:#bbb;}
+  .btn-new{margin-left:auto;background:var(--pink);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;}
+  .btn-new:hover{background:var(--pink-dark);}
+  .table-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead tr{background:var(--cream2);border-bottom:1.5px solid var(--border);}
+  th{text-align:left;padding:11px 13px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;}
+  th:hover{color:var(--pink);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer;}
+  tbody tr:last-child{border-bottom:none;}tbody tr:hover{background:var(--pink-light);}
+  td{padding:11px 13px;color:var(--brown);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  td.task-name{font-weight:500;max-width:240px;}
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px;}
+  .badge-completed{background:var(--green-light);color:var(--green);}.badge-not-started{background:var(--gray-light);color:#666;}.badge-in-progress{background:var(--amber-light);color:var(--amber);}
+  .badge-paid{background:var(--green-light);color:var(--green);}.badge-not-paid{background:var(--red-light);color:var(--red);}.badge-deposit{background:var(--amber-light);color:var(--amber);}
+  .pagination{display:flex;align-items:center;gap:8px;padding:13px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--brown-light);justify-content:space-between;flex-wrap:wrap;}
+  .page-btns{display:flex;gap:5px;}
+  .page-btn{padding:4px 11px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--brown);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s;}
+  .page-btn:hover{border-color:var(--pink);color:var(--pink);}.page-btn.active{background:var(--pink);color:#fff;border-color:var(--pink);}.page-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(60,30,20,.45);z-index:100;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:18px;padding:26px 30px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(60,30,20,.3);}
+  .modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+  .modal-title{font-family:'Fraunces',serif;font-size:19px;font-weight:700;color:var(--brown);}
+  .modal-close{background:none;border:none;font-size:21px;color:var(--brown-light);cursor:pointer;padding:0 4px;line-height:1;}
+  .modal-close:hover{color:var(--pink);}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);margin-bottom:5px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--brown);outline:none;transition:border-color .15s;}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--pink);}
+  .form-group textarea{height:75px;resize:vertical;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .modal-actions{display:flex;gap:9px;margin-top:20px;justify-content:flex-end;}
+  .btn-cancel{background:var(--gray-light);color:var(--brown);border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-save{background:var(--pink);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;}
+  .btn-save:hover{background:var(--pink-dark);}
+  .btn-delete{background:var(--red-light);color:var(--red);border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-right:auto;}
+  .modal-detail-row{display:flex;gap:8px;margin-bottom:11px;align-items:flex-start;}
+  .modal-detail-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);min-width:85px;padding-top:2px;}
+  .modal-detail-value{font-size:14px;color:var(--brown);}
+  .amount-big{font-family:'Fraunces',serif;font-size:30px;font-weight:700;color:var(--green);}
+  .empty-state{text-align:center;padding:44px 24px;color:var(--brown-light);}
+  .owed-section{margin-bottom:26px;}
+  .section-title{font-family:'Fraunces',serif;font-size:16px;font-weight:500;color:var(--brown);margin-bottom:13px;display:flex;align-items:center;gap:8px;}
+  .owed-card{background:var(--red-light);border:1px solid rgba(192,57,43,.2);border-radius:10px;padding:11px 15px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;cursor:pointer;transition:background .12s;}
+  .owed-card:hover{background:#f9d8d4;}
+  .owed-info{flex:1;}.owed-name{font-weight:500;font-size:14px;color:var(--brown);}.owed-client{font-size:12px;color:var(--brown-light);}
+  .owed-amt{font-family:'Fraunces',serif;font-size:19px;font-weight:700;color:var(--red);}
+  /* UPCOMING WEEK VIEW */
+  .week-nav{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .week-nav-btn{background:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--brown);cursor:pointer;transition:all .12s;}
+  .week-nav-btn:hover{border-color:var(--pink);color:var(--pink);}
+  .week-label{font-family:'Fraunces',serif;font-size:16px;color:var(--brown);font-weight:500;}
+  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:22px;}
+  .week-day{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 8px;min-height:80px;}
+  .week-day.today{border-color:var(--pink);border-width:2px;}
+  .week-day.has-orders{background:var(--amber-light);border-color:rgba(196,125,26,.3);}
+  .week-day-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);margin-bottom:4px;}
+  .week-day-num{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--brown);margin-bottom:5px;}
+  .week-day.today .week-day-num{color:var(--pink);}
+  .week-order-pill{background:var(--amber);color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;margin-bottom:3px;font-weight:600;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;transition:background .12s;}
+  .week-order-pill:hover{background:var(--brown);}
+  .week-order-pill.overdue{background:var(--red);}
+  .week-order-pill.done{background:var(--green);}
+  .week-order-pill.no-date{background:var(--gray);}
+  /* OPEN ORDERS PANEL */
+  .open-order-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;cursor:pointer;transition:all .12s;}
+  .open-order-card:hover{background:var(--pink-light);border-color:rgba(232,82,122,.3);}
+  .open-order-info{flex:1;}
+  .open-order-name{font-weight:600;font-size:14px;color:var(--brown);}
+  .open-order-client{font-size:12px;color:var(--brown-light);}
+  .open-order-due{font-size:12px;font-weight:600;}
+  .due-soon{color:var(--amber);}.due-overdue{color:var(--red);}.due-ok{color:var(--green);}
+  /* CLIENT SEARCH TAB */
+  .client-search-box{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:var(--shadow);}
+  .client-search-input{width:100%;font-family:'DM Sans',sans-serif;font-size:16px;padding:12px 18px;border:2px solid var(--border);border-radius:10px;background:var(--cream);color:var(--brown);outline:none;transition:border-color .15s;}
+  .client-search-input:focus{border-color:var(--pink);}
+  .client-results{margin-top:14px;}
+  .client-suggestion{display:inline-block;margin:4px;padding:5px 14px;background:var(--cream2);border:1px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;transition:all .12s;}
+  .client-suggestion:hover{background:var(--pink-light);border-color:var(--pink);color:var(--pink);}
+  .client-profile{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+  .client-profile-header{background:var(--brown);color:#fff;padding:20px 24px;display:flex;align-items:center;gap:16px;}
+  .client-avatar{width:52px;height:52px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;}
+  .client-name{font-family:'Fraunces',serif;font-size:20px;font-weight:700;}
+  .client-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--border);}
+  .client-stat{background:#fff;padding:16px 20px;}
+  .client-stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--brown-light);font-weight:600;margin-bottom:5px;}
+  .client-stat-value{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--brown);}
+  .client-stat-value.red{color:var(--red);}.client-stat-value.green{color:var(--green);}
+  .client-orders-section{padding:20px 24px;}
+  .balance-alert{background:var(--red-light);border:1px solid rgba(192,57,43,.25);border-radius:10px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .balance-alert-text{font-size:14px;font-weight:600;color:var(--red);}
+  .balance-alert-amt{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--red);}
+  .btn-send{background:var(--green);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;}
+  .btn-send:hover{background:#2d6349;}
+  .btn-copy{background:var(--blue-light);color:var(--blue);border:1px solid rgba(37,99,168,.2);border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}
+  .btn-copy:hover{background:var(--blue);color:#fff;}
+  .msg-preview{background:var(--cream2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:14px;line-height:1.7;color:var(--brown);margin-top:14px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;}
+  .send-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center;}
+  .copy-confirm{font-size:12px;color:var(--green);font-weight:600;display:none;}
+  .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-bottom:24px;}
+  .chart-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);}
+  .chart-title{font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:var(--brown);margin-bottom:14px;}
+  .chart-wrap{position:relative;width:100%;height:210px;}
+  .tag-year{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:var(--brown);color:#fff;font-family:'DM Sans',sans-serif;}
+  .overdue-badge{background:var(--red);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
+  @media(max-width:640px){main{padding:14px;}.form-row{grid-template-columns:1fr;}.week-grid{grid-template-columns:repeat(4,1fr);}.week-day:nth-child(n+5){display:none;}}
+
+  .settings-section{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:18px;box-shadow:var(--shadow);}
+
+  /* YEAR SWITCHER */
+  .year-switcher{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+  .year-switcher-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--brown-light);}
+  .year-select{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--brown);background:#fff;border:2px solid var(--pink);border-radius:10px;padding:7px 36px 7px 14px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e8527a' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;transition:border-color .15s;}
+  .year-select:hover{border-color:var(--pink-dark);}
+
+  /* LOADING / SYNC */
+  .loading-overlay{position:fixed;inset:0;background:var(--cream);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+  .loading-spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-family:'Fraunces',serif;font-size:18px;color:var(--brown);}
+  .loading-sub{font-size:13px;color:var(--brown-light);}
+  .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;background:var(--green);}
+  .sync-dot.syncing{background:var(--amber);animation:pulse .8s ease-in-out infinite;}
+  .sync-dot.error{background:var(--red);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .offline-banner{background:var(--amber-light);border-bottom:2px solid var(--amber);padding:8px 20px;font-size:12px;color:var(--amber);font-weight:600;text-align:center;display:none;}
+</style>
+</head>
+<body>
+<div class="offline-banner" id="offlineBanner">⚠ Working offline — changes will sync when connection is restored</div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Manitas Creations</div>
+  <div class="loading-sub" id="loadingMsg">Connecting to database…</div>
+</div>
+<header>
+  <div><div class="logo">Manitas <span>Creations</span></div><div class="header-meta">Order Management Dashboard</div></div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+  <div style="font-size:12px;color:rgba(255,255,255,0.5);" id="todayDate"></div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span id="saveIndicator" style="font-size:11px;color:rgba(255,255,255,0.6);display:flex;align-items:center;"><span class="sync-dot" id="syncDot"></span><span id="syncText">Connected</span></span>
+    <button onclick="resetToOriginal()" style="font-size:11px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;" title="Clear all local changes and restore original data">↺ Reset data</button>
+  </div>
+</div>
+</header>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
+  <button class="tab" onclick="showTab('open')">📋 Open Orders</button>
+  <button class="tab" onclick="showTab('upcoming')">📅 Upcoming</button>
+  <button class="tab" onclick="showTab('orders')">📁 All Orders</button>
+  <button class="tab" onclick="showTab('clients')">🔍 Client Search</button>
+  <button class="tab" onclick="showTab('alerts')">🔔 Alerts</button>
+  <button class="tab" onclick="showTab('charts')">📈 Charts</button>
+  <button class="tab" onclick="showTab('settings')">⚙️ Settings</button>
+</div>
+<main>
+
+<!-- OVERVIEW TAB -->
+<div id="tab-overview">
+  <div class="year-switcher">
+    <span class="year-switcher-label">Viewing:</span>
+    <select class="year-select" id="yearSwitcher" onchange="switchYear(this.value==='all'?'all':parseInt(this.value))"></select>
+  </div>
+  <div class="metrics" id="metricsArea"></div>
+  <div class="section-title" id="overviewSectionTitle">2026 Orders <span class="tag-year" id="overviewYearTag">2026</span></div>
+  <div class="controls">
+    <input type="text" id="overviewSearch" placeholder="Search orders…" oninput="renderOverviewTable()">
+    <select id="overviewStatusFilter" onchange="renderOverviewTable()">
+      <option value="">All Statuses</option>
+      <option value="Completed">Completed</option>
+      <option value="Not started">Not Started</option>
+      <option value="In progress">In Progress</option>
+    </select>
+    <select id="overviewPaidFilter" onchange="renderOverviewTable()">
+      <option value="">All Payment</option>
+      <option value="Paid">Paid</option>
+      <option value="Not paid">Not Paid</option>
+      <option value="Deposit">Deposit</option>
+    </select>
+    <button class="btn-new" onclick="openNewOrderModal()">+ New Order</button>
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr>
+      <th onclick="sortTable('overview','Task')">Order ↕</th>
+      <th onclick="sortTable('overview','Client')">Client ↕</th>
+      <th onclick="sortTable('overview','DueDate')">Due Date ↕</th>
+      <th onclick="sortTable('overview','Amount')">Amount ↕</th>
+      <th onclick="sortTable('overview','Status')">Status ↕</th>
+      <th onclick="sortTable('overview','Paid')">Payment ↕</th>
+    </tr></thead><tbody id="overviewTbody"></tbody></table>
+    <div class="pagination" id="overviewPag"></div>
+  </div>
+</div>
+
+<!-- OPEN ORDERS TAB -->
+<div id="tab-open" style="display:none">
+  <div class="section-title">Open Orders — Not Completed</div>
+  <div class="controls">
+    <input type="text" id="openSearch" placeholder="Search open orders…" oninput="renderOpenOrders()">
+    <select id="openPaidFilter" onchange="renderOpenOrders()">
+      <option value="">All Payment</option>
+      <option value="Not paid">Not Paid</option>
+      <option value="Deposit">Deposit</option>
+    </select>
+    <button class="btn-new" onclick="openNewOrderModal()">+ New Order</button>
+  </div>
+  <div id="openOrdersList"></div>
+</div>
+
+<!-- UPCOMING TAB - WEEK VIEW -->
+<div id="tab-upcoming" style="display:none">
+  <div class="week-nav">
+    <button class="week-nav-btn" onclick="changeWeek(-1)">← Prev Week</button>
+    <div class="week-label" id="weekLabel"></div>
+    <button class="week-nav-btn" onclick="changeWeek(1)">Next Week →</button>
+    <button class="week-nav-btn" onclick="goToThisWeek()" style="margin-left:auto;border-color:var(--pink);color:var(--pink);">Today</button>
+  </div>
+  <div class="week-grid" id="weekGrid"></div>
+  <div class="section-title" id="weekDayTitle" style="margin-top:8px;display:none"></div>
+  <div id="weekDayOrders"></div>
+  <div style="margin-top:24px;padding:14px 16px;background:var(--cream2);border-radius:10px;font-size:13px;color:var(--brown-light);">
+    <strong style="color:var(--brown);">Legend:</strong>
+    &nbsp;<span style="background:var(--amber);color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;">upcoming</span>
+    &nbsp;<span style="background:var(--red);color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;">overdue</span>
+    &nbsp;<span style="background:var(--green);color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;">completed</span>
+    &nbsp;<span style="background:var(--gray);color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;">no date</span>
+    — Click any order pill to view details.
+  </div>
+</div>
+
+<!-- ALL ORDERS TAB -->
+<div id="tab-orders" style="display:none">
+  <div class="section-title">All Orders (2025 + 2026)</div>
+  <div class="controls">
+    <input type="text" id="allSearch" placeholder="Search orders…" oninput="renderAllTable()">
+    <select id="allYearFilter" onchange="renderAllTable()">
+      <option value="">All Years</option>
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+    </select>
+    <select id="allStatusFilter" onchange="renderAllTable()">
+      <option value="">All Statuses</option>
+      <option value="Completed">Completed</option>
+      <option value="Not started">Not Started</option>
+      <option value="In progress">In Progress</option>
+    </select>
+    <select id="allPaidFilter" onchange="renderAllTable()">
+      <option value="">All Payment</option>
+      <option value="Paid">Paid</option>
+      <option value="Not paid">Not Paid</option>
+      <option value="Deposit">Deposit</option>
+    </select>
+    <button class="btn-new" onclick="openNewOrderModal()">+ New Order</button>
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr>
+      <th onclick="sortTable('all','Task')">Order ↕</th>
+      <th onclick="sortTable('all','Client')">Client ↕</th>
+      <th onclick="sortTable('all','Year')">Year ↕</th>
+      <th onclick="sortTable('all','DueDate')">Due Date ↕</th>
+      <th onclick="sortTable('all','Amount')">Amount ↕</th>
+      <th onclick="sortTable('all','Status')">Status ↕</th>
+      <th onclick="sortTable('all','Paid')">Payment ↕</th>
+    </tr></thead><tbody id="allTbody"></tbody></table>
+    <div class="pagination" id="allPag"></div>
+  </div>
+</div>
+
+<!-- CLIENT SEARCH TAB -->
+<div id="tab-clients" style="display:none">
+  <div class="client-search-box">
+    <div class="section-title" style="margin-bottom:12px;">🔍 Client Balance Lookup</div>
+    <input class="client-search-input" type="text" id="clientSearchInput" placeholder="Type a client name…" oninput="onClientSearch()">
+    <div class="client-results" id="clientSuggestions"></div>
+  </div>
+  <div id="clientProfile"></div>
+</div>
+
+<!-- ALERTS TAB -->
+<div id="tab-alerts" style="display:none">
+  <div class="owed-section">
+    <div class="section-title" style="color:var(--red);">💸 Unpaid / Deposits Owed</div>
+    <div id="owedList"></div>
+  </div>
+  <div class="owed-section">
+    <div class="section-title" style="color:var(--red);">🚨 Overdue (Past Due, Not Completed)</div>
+    <div id="overdueList"></div>
+  </div>
+</div>
+
+<!-- CHARTS TAB -->
+<div id="tab-charts" style="display:none">
+  <div class="charts-grid">
+    <div class="chart-card"><div class="chart-title">Revenue by Year</div><div class="chart-wrap"><canvas id="chartRevYear" role="img" aria-label="Revenue by year">Revenue chart</canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Payment Status (2026)</div><div class="chart-wrap"><canvas id="chartPaid" role="img" aria-label="Payment status">Payment status</canvas></div></div>
+    <div class="chart-card" style="grid-column:1/-1;"><div class="chart-title">Monthly Revenue 2026</div><div class="chart-wrap" style="height:230px"><canvas id="chartMonthly" role="img" aria-label="Monthly revenue">Monthly</canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Order Status (2026)</div><div class="chart-wrap"><canvas id="chartStatus" role="img" aria-label="Order status">Status</canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Top Clients by Revenue</div><div class="chart-wrap" style="height:260px"><canvas id="chartClients" role="img" aria-label="Top clients">Clients</canvas></div></div>
+  </div>
+</div>
+
+
+<!-- SETTINGS TAB -->
+<div id="tab-settings" style="display:none">
+  <div style="max-width:600px;">
+
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title" style="margin-bottom:18px;">🏷️ Business Info</div>
+      <div class="form-group">
+        <label>Business Name</label>
+        <input type="text" id="s_bizname" placeholder="Manitas Creations" style="width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--brown);outline:none;">
+      </div>
+      <div class="form-group">
+        <label>Tagline / Subtitle</label>
+        <input type="text" id="s_tagline" placeholder="Order Management Dashboard" style="width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--brown);outline:none;">
+      </div>
+      <div class="form-group">
+        <label>Accent Color</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <input type="color" id="s_color" value="#e8527a" style="width:48px;height:38px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span onclick="setColor('#e8527a')" style="width:28px;height:28px;border-radius:50%;background:#e8527a;cursor:pointer;border:2px solid transparent;" title="Pink"></span>
+            <span onclick="setColor('#5c3a2a')" style="width:28px;height:28px;border-radius:50%;background:#5c3a2a;cursor:pointer;border:2px solid transparent;" title="Brown"></span>
+            <span onclick="setColor('#3a7d5e')" style="width:28px;height:28px;border-radius:50%;background:#3a7d5e;cursor:pointer;border:2px solid transparent;" title="Green"></span>
+            <span onclick="setColor('#2563a8')" style="width:28px;height:28px;border-radius:50%;background:#2563a8;cursor:pointer;border:2px solid transparent;" title="Blue"></span>
+            <span onclick="setColor('#7c3aed')" style="width:28px;height:28px;border-radius:50%;background:#7c3aed;cursor:pointer;border:2px solid transparent;" title="Purple"></span>
+            <span onclick="setColor('#c47d1a')" style="width:28px;height:28px;border-radius:50%;background:#c47d1a;cursor:pointer;border:2px solid transparent;" title="Amber"></span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveSettings()" style="margin-top:6px;">Save Changes</button>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title" style="margin-bottom:18px;">📅 Manage Years</div>
+      <p style="font-size:13px;color:var(--brown-light);margin-bottom:14px;">Add a new year to track orders — it will appear in the year dropdown when creating or editing orders, and as a filter in All Orders.</p>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+        <input type="number" id="s_newyear" placeholder="e.g. 2027" min="2020" max="2099" style="font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;width:140px;color:var(--brown);outline:none;">
+        <button class="btn-save" onclick="addYear()">+ Add Year</button>
+      </div>
+      <div id="yearsList" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title" style="margin-bottom:18px;">💾 Data Management</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:var(--cream2);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--brown);">Export Data</div>
+            <div style="font-size:12px;color:var(--brown-light);margin-top:2px;">Download all your orders as a JSON backup file</div>
+          </div>
+          <button class="btn-save" style="background:var(--green);" onclick="exportData()">⬇ Export Backup</button>
+        </div>
+        <div style="background:var(--cream2);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--brown);">Import Data</div>
+            <div style="font-size:12px;color:var(--brown-light);margin-top:2px;">Restore from a previously exported backup file</div>
+          </div>
+          <label class="btn-save" style="background:var(--blue);cursor:pointer;">⬆ Import Backup<input type="file" accept=".json" onchange="importData(event)" style="display:none;"></label>
+        </div>
+        <div style="background:var(--red-light);border:1px solid rgba(192,57,43,.2);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--red);">Reset to Original Data</div>
+            <div style="font-size:12px;color:var(--brown-light);margin-top:2px;">Wipes all changes and restores the original spreadsheet data</div>
+          </div>
+          <button class="btn-delete" style="margin:0;" onclick="resetToOriginal()">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detailTitle">Order Details</div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div id="detailBody"></div>
+    <div class="modal-actions">
+      <button class="btn-delete" onclick="deleteCurrentOrder()">Delete</button>
+      <button class="btn-cancel" onclick="closeModal('detailModal')">Close</button>
+      <button class="btn-save" onclick="editCurrentOrder()">Edit Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT/NEW MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="editModalTitle">Edit Order</div>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div class="form-group"><label>Order / Task Name</label><input type="text" id="f_task" placeholder="e.g. Baby Shower Toppers"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Client</label><input type="text" id="f_client" placeholder="Client name"></div>
+      <div class="form-group"><label>Due Date</label><input type="date" id="f_duedate"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Order Amount ($)</label><input type="number" id="f_amount" placeholder="0.00" step="0.01" min="0" oninput="updateBalanceSummary()"></div>
+      <div class="form-group"><label>Delivery Fee ($)</label><input type="number" id="f_delivery" placeholder="0.00" step="0.01" min="0" oninput="updateBalanceSummary()"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Deposit Received ($)</label><input type="number" id="f_deposit" placeholder="0.00" step="0.01" min="0" oninput="updateBalanceSummary()"></div>
+      <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <div id="balanceSummary" style="background:var(--cream2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;line-height:1.9;">
+          <div style="display:flex;justify-content:space-between;gap:12px;"><span style="color:var(--brown-light);">Total:</span><span id="bs_total" style="font-weight:600;color:var(--brown);">$0.00</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px;"><span style="color:var(--brown-light);">Deposit:</span><span id="bs_deposit" style="font-weight:600;color:var(--green);">-$0.00</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:5px;padding-top:5px;"><span style="color:var(--brown);font-weight:700;">Balance Due:</span><span id="bs_balance" style="font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--red);">$0.00</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group"><label>Year</label><select id="f_year"><option value="2026">2026</option><option value="2025">2025</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>Status</label><select id="f_status"><option value="Not started">Not Started</option><option value="In progress">In Progress</option><option value="Completed">Completed</option></select></div>
+      <div class="form-group"><label>Payment</label><select id="f_paid"><option value="Not paid">Not Paid</option><option value="Deposit">Deposit</option><option value="Paid">Paid</option></select></div>
+    </div>
+    <div class="form-group"><label>Pickup / Delivery?</label><select id="f_pickup"><option value="No">No Pickup</option><option value="Yes">Pickup</option><option value="Delivery">Delivery</option></select></div>
+    <div class="form-group"><label>Notes</label><textarea id="f_notes" placeholder="Extra details, quantity, deposit info…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn-save" onclick="saveOrder()">Save Order</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// DATA
+const BUILTIN_ORDERS = [{"Task": "western wedding stickers", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-05-09", "Amount": 24.0, "Notes": "", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "TV SHOW", "Status": "Completed", "Client": "Alex", "DueDate": "", "Amount": 12.0, "Notes": "1 Sheet", "Paid": "Not paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Baby shower rainbow", "Status": "Completed", "Client": "Hayden Facebook", "DueDate": "2026-01-30", "Amount": 12.0, "Notes": "12 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Baby 1st bday", "Status": "Completed", "Client": "ASHELY FACEBOOK", "DueDate": "2026-02-28", "Amount": 60.0, "Notes": "$15 Depsosit 100pc", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Mini Mouse Speed Racer", "Status": "Not started", "Client": "Crystal", "DueDate": "", "Amount": 30.0, "Notes": "", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Hot Girls do pilates", "Status": "Completed", "Client": "ATT", "DueDate": "2026-05-02", "Amount": 30.0, "Notes": "50 peice toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Burgandy Bows", "Status": "Completed", "Client": "Alex", "DueDate": "2026-05-02", "Amount": 45.0, "Notes": "75 TOPPERS", "Paid": "Not paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Mother's day", "Status": "Not started", "Client": "Angie Facebook", "DueDate": "2026-05-07", "Amount": 45.0, "Notes": "$23 deposit", "Paid": "Deposit", "Pickup": "No", "Year": 2026}, {"Task": "Rupunzel", "Status": "Completed", "Client": "Marlene Facebook", "DueDate": "2026-03-26", "Amount": 12.0, "Notes": "1 page wafer paper", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Wedding The Pinados", "Status": "Not started", "Client": "Drew", "DueDate": "2026-06-27", "Amount": 30.0, "Notes": "50 toppers desgin #1", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Jennys 26th", "Status": "Completed", "Client": "its a bartender", "DueDate": "2026-05-23", "Amount": 31.0, "Notes": "25+$6 shipping", "Paid": "Not paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Pepa Pig", "Status": "Not started", "Client": "Emilse", "DueDate": "2026-05-07", "Amount": 15.0, "Notes": "$8 depsot", "Paid": "Deposit", "Pickup": "No", "Year": 2026}, {"Task": "Alex Toppers", "Status": "Completed", "Client": "Alex", "DueDate": "2026-01-01", "Amount": 30.0, "Notes": "50 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Birthday Anime", "Status": "Not started", "Client": "facebook", "DueDate": "2026-05-07", "Amount": 12.0, "Notes": "1 sheet $6 deposit", "Paid": "Deposit", "Pickup": "No", "Year": 2026}, {"Task": "21st birthday", "Status": "Not started", "Client": "Drew", "DueDate": "2026-06-01", "Amount": 30.0, "Notes": "50 topeprs", "Paid": "Deposit", "Pickup": "No", "Year": 2026}, {"Task": "Marleen 15th", "Status": "Not started", "Client": "phone", "DueDate": "2026-05-09", "Amount": 90.0, "Notes": "150 peice", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Kastee/ Demon hunter", "Status": "Completed", "Client": "Tammy", "DueDate": "2026-03-21", "Amount": 24.0, "Notes": "30 toppers / 15 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "sydney Graduation", "Status": "Completed", "Client": "its a bartender", "DueDate": "2026-05-09", "Amount": 25.0, "Notes": "", "Paid": "Not paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Kpop Frosting Sheets", "Status": "Completed", "Client": "Brittney K pop Demon hunters", "DueDate": "", "Amount": 15.0, "Notes": "1 page frosting shets / $8 Deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Fine Jewlerys", "Status": "Completed", "Client": "Buzz and bougie", "DueDate": "2026-03-21", "Amount": 36.0, "Notes": "50 toppers ship ASAP", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "10 mix", "Status": "Completed", "Client": "Buzz and bouggie", "DueDate": "2026-04-25", "Amount": 0.0, "Notes": "", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Birthday", "Status": "Completed", "Client": "Daniel 2000s emo", "DueDate": "", "Amount": 30.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Gameing", "Status": "Completed", "Client": "Adrii Facebook", "DueDate": "2026-01-30", "Amount": 30.0, "Notes": "$15 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Baby Mickey", "Status": "Completed", "Client": "Face book Vira", "DueDate": "2026-01-15", "Amount": 24.0, "Notes": "$12 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "wedding", "Status": "Completed", "Client": "its a bartender", "DueDate": "2026-01-10", "Amount": 22.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Quinera", "Status": "Completed", "Client": "facebook", "DueDate": "2026-02-28", "Amount": 60.0, "Notes": "2 sheets frosting / 50 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Roman turns 1", "Status": "Completed", "Client": "its a bartender", "DueDate": "2026-03-14", "Amount": 25.0, "Notes": "50 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Back n wite", "Status": "Completed", "Client": "Facebook Daniela", "DueDate": "", "Amount": 30.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Mini mouse ballet", "Status": "Not started", "Client": "", "DueDate": "", "Amount": 0.0, "Notes": "", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Baby Mecanic", "Status": "Completed", "Client": "Jessica", "DueDate": "", "Amount": 12.0, "Notes": "$6 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "8 inch Heart Cake", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-03-18", "Amount": 15.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "NAELSKI Toppers", "Status": "Completed", "Client": "Alex Bartender", "DueDate": "2026-05-07", "Amount": 18.0, "Notes": "", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Baby hurclues", "Status": "Not started", "Client": "Julio", "DueDate": "2026-05-09", "Amount": 18.0, "Notes": "20 peice", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Mexican Bbay shower", "Status": "Completed", "Client": "Alex", "DueDate": "2026-04-30", "Amount": 30.0, "Notes": "50 toppers", "Paid": "Not paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Cal state LA", "Status": "Completed", "Client": "its a bartender", "DueDate": "2026-05-09", "Amount": 25.0, "Notes": "", "Paid": "Not paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Pepa Pig", "Status": "Completed", "Client": "Facebook Kirstina", "DueDate": "2026-03-26", "Amount": 15.0, "Notes": "1 Frosting sheet", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Western wedding toppers/ menu", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-05-07", "Amount": 35.0, "Notes": "24 peice toppers", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Poker toppers", "Status": "Completed", "Client": "Text message", "DueDate": "2026-02-06", "Amount": 30.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Cherry birthday", "Status": "Completed", "Client": "its a bartender", "DueDate": "2026-03-14", "Amount": 25.0, "Notes": "50 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Emoji", "Status": "Completed", "Client": "Julio", "DueDate": "2026-03-28", "Amount": 20.0, "Notes": "30 pice", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Baby Shower Sophia", "Status": "Completed", "Client": "Alex", "DueDate": "2026-03-14", "Amount": 30.0, "Notes": "50 Peice", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Wedding", "Status": "Completed", "Client": "Alex", "DueDate": "2026-01-30", "Amount": 30.0, "Notes": "50 peice", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Home Sweet Home", "Status": "Completed", "Client": "Alex", "DueDate": "2026-01-01", "Amount": 30.0, "Notes": "50 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Emma's 50th", "Status": "Completed", "Client": "Alex", "DueDate": "2026-04-18", "Amount": 32.0, "Notes": "Stickers 48 $24 + $8 express fee, $20", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Jenny rivera stickers", "Status": "Completed", "Client": "Alex", "DueDate": "2026-01-16", "Amount": 10.0, "Notes": "20 stickers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Quincera", "Status": "Completed", "Client": "Alex", "DueDate": "2026-01-01", "Amount": 30.0, "Notes": "50 peice", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "The mind Body Wellness studio", "Status": "Completed", "Client": "ATT", "DueDate": "2026-05-02", "Amount": 30.0, "Notes": "50 peice toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Spring Flowers", "Status": "Completed", "Client": "Erica", "DueDate": "2026-03-31", "Amount": 30.0, "Notes": "50 toppers / $15 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Diego Birthday", "Status": "Completed", "Client": "face book", "DueDate": "2026-01-15", "Amount": 12.0, "Notes": "$6 Deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "40 and fablous", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-01-29", "Amount": 30.0, "Notes": "50 peice / $15 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Twins Birthday", "Status": "Completed", "Client": "facebook", "DueDate": "2026-04-10", "Amount": 60.0, "Notes": "100 toppers $30 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "winner the pooh", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-03-27", "Amount": 15.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "stranger things/ STARWARS", "Status": "Completed", "Client": "facebook", "DueDate": "2026-02-06", "Amount": 30.0, "Notes": "$5 shipping", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "heart cake topper", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-02-02", "Amount": 12.0, "Notes": "$6 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "2 INCH heart", "Status": "Completed", "Client": "facebook", "DueDate": "2026-02-14", "Amount": 12.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Barber shop cake", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-03-20", "Amount": 13.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Chris 18th Brithday", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-02-28", "Amount": 35.0, "Notes": "$20 deposit needs to be shipped and 25/25 stickers/ toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Graduation Toppers", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-03-21", "Amount": 30.0, "Notes": "15 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Red Quincera", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-03-06", "Amount": 30.0, "Notes": "50 toppers / $15 depsosit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Elementary school", "Status": "Completed", "Client": "Facebook", "DueDate": "2026-03-17", "Amount": 12.0, "Notes": "1 page", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Baby Shower", "Status": "Completed", "Client": "Facebook lady", "DueDate": "2026-04-07", "Amount": 24.0, "Notes": "2 sheets", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Boy Face", "Status": "Completed", "Client": "Facebook text message", "DueDate": "2026-03-01", "Amount": 52.0, "Notes": "$26 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Modelo Cake", "Status": "Completed", "Client": "Facebook Vira", "DueDate": "2026-02-13", "Amount": 12.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Wedding Y& D", "Status": "Completed", "Client": "facebook Yvette", "DueDate": "2026-02-27", "Amount": 60.0, "Notes": "$30 Deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Stawberry short cake", "Status": "Completed", "Client": "Fatima Facebook", "DueDate": "2026-04-14", "Amount": 23.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Pink Baptism", "Status": "Completed", "Client": "Gabeila", "DueDate": "2026-02-28", "Amount": 50.0, "Notes": "100 peice / $30 deposit", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Tikok", "Status": "Completed", "Client": "its a bartender", "DueDate": "2026-03-21", "Amount": 75.0, "Notes": "150 toppers/ owes $25", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Hello Kitty", "Status": "Completed", "Client": "Lily", "DueDate": "", "Amount": 30.0, "Notes": "50 toppers/ $15", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "24 Chetta", "Status": "Completed", "Client": "Marleene facebok", "DueDate": "2026-03-26", "Amount": 30.0, "Notes": "50 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Alex Stickers", "Status": "Completed", "Client": "Alex", "DueDate": "2026-03-27", "Amount": 32.0, "Notes": "Stickers 48 $24 + $8 express fee", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Bar Menu running", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-03-06", "Amount": 10.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Pink Spring", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-04-18", "Amount": 10.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Cheada DIY Girl", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-04-25", "Amount": 27.0, "Notes": "50 peice/ print menu", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Bar Menu", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-04-25", "Amount": 10.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Bar Menu 90th birthday", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-04-25", "Amount": 10.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Strawberry toppers/ Memu", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-01-01", "Amount": 69.0, "Notes": "50 topper/menu/polaroid/ paid 50 owes 19", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Airplane / 2026", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-01-18", "Amount": 16.0, "Notes": "20 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "50TH Birthday black lady", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-04-11", "Amount": 10.0, "Notes": "Menu", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Black Bar menu", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-03-13", "Amount": 10.0, "Notes": "menu", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "50 th Birthday mexican lady", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-04-11", "Amount": 35.0, "Notes": "toppers/ Menu", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "HAVANAN Menu/ Topeprs", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-02-07", "Amount": 35.0, "Notes": "Toppers and menu", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "CIF Menu", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-01-17", "Amount": 10.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Blanca 6-7 toppers", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-03-06", "Amount": 35.0, "Notes": "toppers/ bar menu", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Cherry Baby Shower Chery on top", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-04-04", "Amount": 35.0, "Notes": "Menu/ toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Soccer League Champopns", "Status": "Completed", "Client": "midnight sipz", "DueDate": "2026-02-14", "Amount": 20.0, "Notes": "30 peice", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Bryan and Polly Wedding", "Status": "Completed", "Client": "Midnight sipz", "DueDate": "2026-03-28", "Amount": 45.0, "Notes": "toppers/ menu", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Naked Girl", "Status": "Completed", "Client": "Offer up", "DueDate": "2026-02-05", "Amount": 30.0, "Notes": "50 peice", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Wedding TJ", "Status": "Completed", "Client": "pour amor", "DueDate": "2026-04-25", "Amount": 30.0, "Notes": "50 Peice topeprs", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "30th Birthday Cherry", "Status": "Completed", "Client": "Rubio", "DueDate": "2026-04-04", "Amount": 20.0, "Notes": "30 toppers", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Sophia XV", "Status": "Completed", "Client": "Rubio", "DueDate": "2026-04-04", "Amount": 20.0, "Notes": "30", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Bartending logo", "Status": "Completed", "Client": "Socal Bartending", "DueDate": "2026-03-28", "Amount": 36.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Season 14 ep 1", "Status": "Completed", "Client": "Vira Facebook", "DueDate": "2026-04-13", "Amount": 12.0, "Notes": "1 cake image 8in", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Church toppers", "Status": "Not started", "Client": "", "DueDate": "", "Amount": 0.0, "Notes": "", "Paid": "Not paid", "Pickup": "No", "Year": 2026}, {"Task": "Vira Caution", "Status": "Completed", "Client": "Vira Facebook", "DueDate": "2026-02-04", "Amount": 12.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Cowboy Stars", "Status": "Completed", "Client": "Vira Facebook", "DueDate": "2026-04-04", "Amount": 45.0, "Notes": "", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "Patriot Toppers", "Status": "Completed", "Client": "", "DueDate": "2026-02-13", "Amount": 24.0, "Notes": "2 sheets - 30 pc", "Paid": "Paid", "Pickup": "Yes", "Year": 2026}, {"Task": "21st brithday", "Status": "Completed", "Client": "Nayeli", "DueDate": "", "Amount": 65.0, "Notes": "100 toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Dona leo", "Status": "Completed", "Client": "Desis", "DueDate": "2025-10-17", "Amount": 0.0, "Notes": "Vynil", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Body Building Offer up", "Status": "Completed", "Client": "Offer up", "DueDate": "2025-10-21", "Amount": 30.0, "Notes": "100 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Strawberry toppers/ Memu", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 69.0, "Notes": "50 topper/menu/polaroid", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "AYSO 544", "Status": "Completed", "Client": "Its a Bartender", "DueDate": "", "Amount": 22.0, "Notes": "50 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Wilma Back drop", "Status": "Completed", "Client": "Wilma", "DueDate": "2025-10-17", "Amount": 0.0, "Notes": "Vynil", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Wilma Jello", "Status": "Completed", "Client": "Wilma", "DueDate": "2025-10-17", "Amount": 0.0, "Notes": "40 Toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Black birthday", "Status": "Completed", "Client": "Its a Bartender", "DueDate": "2025-10-13", "Amount": 22.0, "Notes": "50 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Rancho Humidle", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 90.0, "Notes": "150", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Esty order", "Status": "Completed", "Client": "Etsy", "DueDate": "", "Amount": 0.0, "Notes": "15 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Cupcake toppers Black Lady", "Status": "Completed", "Client": "Facebook", "DueDate": "2025-10-24", "Amount": 12.0, "Notes": "12 toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Mickey Mouse", "Status": "Completed", "Client": "Facebook", "DueDate": "", "Amount": 13.0, "Notes": "12 on Cricut", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Snoopy PUMKIN", "Status": "Completed", "Client": "Facebook Gem", "DueDate": "", "Amount": 0.0, "Notes": "50 / 2.5", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "5 OH", "Status": "Completed", "Client": "its a bartender", "DueDate": "", "Amount": 22.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Wedding", "Status": "Completed", "Client": "Rubios Bartending", "DueDate": "", "Amount": 20.0, "Notes": "30 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Matthew 16th", "Status": "Completed", "Client": "midnight sipz", "DueDate": "", "Amount": 59.0, "Notes": "50 topper/menu/ polaroid paid $5 new total 54", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "wedding", "Status": "Completed", "Client": "its a bartender", "DueDate": "", "Amount": 0.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Baptism stickers  (Danneil )", "Status": "Completed", "Client": "Daniel Stired society", "DueDate": "2025-10-17", "Amount": 16.0, "Notes": "4 sheets", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Quincerna", "Status": "Completed", "Client": "facebook", "DueDate": "2025-11-07", "Amount": 30.0, "Notes": "100 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Police stickers (Danneil )", "Status": "Completed", "Client": "Daniel Stired society", "DueDate": "2025-10-17", "Amount": 32.0, "Notes": "8 Sheets", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Alex stickers sad quotes", "Status": "Completed", "Client": "Alex", "DueDate": "2025-10-24", "Amount": 30.0, "Notes": "60 stickers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Wedding drink toppers", "Status": "Completed", "Client": "Alex", "DueDate": "2025-10-24", "Amount": 100.0, "Notes": "150 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Facebook Wedding Smith", "Status": "Completed", "Client": "Facebook", "DueDate": "2025-10-17", "Amount": 30.0, "Notes": "100 Toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Kayle 40th", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "", "Amount": 30.0, "Notes": "50 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Therese Masqurade", "Status": "In progress", "Client": "Facebook", "DueDate": "", "Amount": 0.0, "Notes": "40/ 1.5 for cookies", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Cofffe Baby shower", "Status": "Completed", "Client": "Facebook", "DueDate": "2025-10-21", "Amount": 10.0, "Notes": "20 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "facebook birthday spnaish", "Status": "Completed", "Client": "dianna", "DueDate": "", "Amount": 12.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Wedding oct 25th", "Status": "Completed", "Client": "Facebook", "DueDate": "2025-10-25", "Amount": 90.0, "Notes": "200 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Thanksgiving 2025", "Status": "Completed", "Client": "Facebook", "DueDate": "", "Amount": 20.0, "Notes": "30 DRINK TOPPERS", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "a tini bit older", "Status": "Completed", "Client": "Facebook", "DueDate": "", "Amount": 15.0, "Notes": "$5 deposit pick up thursaday", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Alex Dogs", "Status": "Completed", "Client": "Alex", "DueDate": "2025-10-24", "Amount": 60.0, "Notes": "100 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Converse", "Status": "Completed", "Client": "Facebook", "DueDate": "2025-10-24", "Amount": 24.0, "Notes": "80 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Socorro birthday", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "", "Amount": 12.0, "Notes": "12", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Fit and Fab", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-17", "Amount": 30.0, "Notes": "50 toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Alex Wedding toppers", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-12", "Amount": 90.0, "Notes": "150 DRINK toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Quincerna", "Status": "Completed", "Client": "Facebook", "DueDate": "2025-12-20", "Amount": 30.0, "Notes": "100 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "kid birthday", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "", "Amount": 35.0, "Notes": "menu and toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Alex Police Stickers", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-03", "Amount": 20.0, "Notes": "4 SHEETS", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Jimbos 40th", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-17", "Amount": 30.0, "Notes": "50 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Bandana", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 30.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Old Laddies", "Status": "Completed", "Client": "Its a Bartender", "DueDate": "2025-10-12", "Amount": 88.0, "Notes": "200 drink Toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Betos 50th", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "", "Amount": 35.0, "Notes": "Bar menu and toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Star Wedding flower", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-17", "Amount": 25.0, "Notes": "50 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Alex chicken toppers", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-12", "Amount": 90.0, "Notes": "150 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Fall Haloween & Bar Menu", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-17", "Amount": 35.0, "Notes": "50 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Nadas bday", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "", "Amount": 30.0, "Notes": "30 drink toppers/ bar menu", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Angies 50th", "Status": "Completed", "Client": "midnight sipz", "DueDate": "", "Amount": 30.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "LULA Toppers /Bar Menu", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-24", "Amount": 35.0, "Notes": "50 Drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Farrari Birthday", "Status": "Completed", "Client": "midnightsipz@gmail.com", "DueDate": "2025-10-25", "Amount": 30.0, "Notes": "50 drink toppers", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Cake topper/ Snow flake/x-mas/midnight/christmas invite/menu", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 75.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Friends sign", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 40.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Graduation", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 15.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Christmas", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 25.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "CTE And beauty and Beast", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 80.0, "Notes": "", "Paid": "Paid", "Pickup": "", "Year": 2025}, {"Task": "Wedding heart", "Status": "Completed", "Client": "", "DueDate": "", "Amount": 45.0, "Notes": "150 drink topeprs", "Paid": "Paid", "Pickup": "", "Year": 2025}];
+let ORDERS = [];
+// ============================================================
+// SUPABASE CONFIG
+// ============================================================
+const SB_URL = 'https://piihracaeainkifdfrmm.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpaWhyYWNhZWFpbmtpZmRmcm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjk1NTIsImV4cCI6MjA5Mzc0NTU1Mn0.2KYHZ77i45pnXzXMp7KXepaEU3yyaNTYEDhkkRT0Hg0';
+const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+let isOnline = true;
+let _nextId = 0;
+const LOCAL_FALLBACK = 'manitas_offline_v1';
+
+function sbUrl(path){ return SB_URL + '/rest/v1/' + path; }
+
+// Map DB row → app order object
+function dbToOrder(row){
+  return {
+    _id: row.id,
+    Task: row.task || '',
+    Client: row.client || '',
+    DueDate: row.due_date || '',
+    Amount: parseFloat(row.amount) || 0,
+    DeliveryFee: parseFloat(row.delivery_fee) || 0,
+    Deposit: parseFloat(row.deposit) || 0,
+    Year: row.year || 2026,
+    Status: row.status || 'Not started',
+    Paid: row.paid || 'Not paid',
+    Pickup: row.pickup || 'No',
+    Notes: row.notes || ''
+  };
+}
+
+// Map app order object → DB row
+function orderToDb(o){
+  return {
+    task: o.Task,
+    client: o.Client,
+    due_date: o.DueDate || null,
+    amount: o.Amount || 0,
+    delivery_fee: o.DeliveryFee || 0,
+    deposit: o.Deposit || 0,
+    year: o.Year,
+    status: o.Status,
+    paid: o.Paid,
+    pickup: o.Pickup,
+    notes: o.Notes
+  };
+}
+
+// SYNC STATUS UI
+function setSyncing(msg){
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  if(dot){ dot.className='sync-dot syncing'; }
+  if(txt) txt.textContent = msg || 'Saving…';
+}
+function setSynced(){
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  if(dot) dot.className='sync-dot';
+  if(txt){ txt.textContent='✓ Synced'; clearTimeout(txt._t); txt._t=setTimeout(()=>{ txt.textContent='Connected'; },2000); }
+}
+function setSyncError(msg){
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  if(dot) dot.className='sync-dot error';
+  if(txt) txt.textContent = msg || 'Sync error';
+}
+
+// LOAD ALL ORDERS FROM SUPABASE
+async function loadFromSupabase(){
+  // Step 1: Show built-in data immediately so dashboard is never blank
+  if(ORDERS.length === 0){
+    const localCache = localStorage.getItem(LOCAL_FALLBACK);
+    if(localCache){
+      try{
+        const cached = JSON.parse(localCache);
+        if(cached.length > 0){
+          cached.forEach(o => { if(o._id >= _nextId) _nextId = o._id+1; ORDERS.push(o); });
+        }
+      }catch(e){}
+    }
+    // If still empty, load built-in data as immediate fallback
+    if(ORDERS.length === 0){
+      BUILTIN_ORDERS.forEach((o,i) => {
+        const copy = {...o, _id: i};
+        if(copy._id >= _nextId) _nextId = copy._id + 1;
+        ORDERS.push(copy);
+      });
+    }
+  }
+
+  // Step 2: Try to connect to Supabase and get live data
+  setLoadingMsg('Syncing with database…');
+  try {
+    const res = await fetch(sbUrl('orders?select=*&order=id.asc'), { headers: SB_HEADERS });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+
+    // If DB is empty, seed it with the built-in orders
+    if(rows.length === 0){
+      setLoadingMsg('First run — importing your orders…');
+      ORDERS.length = 0;
+      _nextId = 0;
+      await seedDatabase();
+    } else {
+      // Replace local orders with live DB data
+      ORDERS.length = 0;
+      _nextId = 0;
+      rows.forEach(r => {
+        const o = dbToOrder(r);
+        if(o._id >= _nextId) _nextId = o._id + 1;
+        ORDERS.push(o);
+      });
+    }
+
+    isOnline = true;
+    document.getElementById('offlineBanner').style.display = 'none';
+    saveLocalFallback();
+    setSynced();
+    return true;
+  } catch(e){
+    console.warn('Supabase load failed:', e.message || e);
+    isOnline = false;
+    // Show specific error in the offline banner to help diagnose
+    const banner = document.getElementById('offlineBanner');
+    if(e.message && e.message.includes('Failed to fetch')){
+      banner.innerHTML = '⚠ Cannot reach database — if opening as a local file, try using a web server or Netlify. <a href="https://piihracaeainkifdfrmm.supabase.co" target="_blank" style="color:var(--amber);text-decoration:underline;">Test connection</a>';
+    } else {
+      banner.innerHTML = '⚠ Database error: ' + (e.message||'unknown') + ' — working offline with built-in data';
+    }
+    banner.style.display = 'block';
+    setSyncError('Offline');
+    return false;
+  }
+}
+
+// SEED DATABASE with built-in orders on first run
+async function seedDatabase(){
+  const chunks = [];
+  for(let i=0;i<BUILTIN_ORDERS.length;i+=50) chunks.push(BUILTIN_ORDERS.slice(i,i+50));
+  for(const chunk of chunks){
+    const rows = chunk.map(o => orderToDb(o));
+    const res = await fetch(sbUrl('orders'), { method:'POST', headers:SB_HEADERS, body:JSON.stringify(rows) });
+    if(res.ok){
+      const inserted = await res.json();
+      inserted.forEach(r => { const o=dbToOrder(r); if(o._id>=_nextId) _nextId=o._id+1; ORDERS.push(o); });
+    }
+  }
+}
+
+// SAVE ONE ORDER (insert or update)
+async function persistData(orderObj){
+  // Always save locally first as fallback
+  saveLocalFallback();
+  if(!orderObj){ setSynced(); return; }
+  setSyncing('Saving…');
+  try {
+    let res, row;
+    if(orderObj._isNew){
+      const dbRow = orderToDb(orderObj);
+      res = await fetch(sbUrl('orders'), { method:'POST', headers:SB_HEADERS, body:JSON.stringify(dbRow) });
+    } else {
+      const dbRow = orderToDb(orderObj);
+      res = await fetch(sbUrl('orders?id=eq.'+orderObj._id), { method:'PATCH', headers:SB_HEADERS, body:JSON.stringify(dbRow) });
+    }
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const result = await res.json();
+    if(orderObj._isNew && result[0]){
+      // Update the local order with the real DB id
+      const realId = result[0].id;
+      const idx = ORDERS.findIndex(o=>o._id===orderObj._id);
+      if(idx>=0){ ORDERS[idx]._id=realId; ORDERS[idx]._isNew=false; }
+      if(realId>=_nextId) _nextId=realId+1;
+      currentOrderId=realId;
+    }
+    saveLocalFallback();
+    setSynced();
+  } catch(e){
+    console.warn('Sync error:', e);
+    setSyncError('Sync failed — saved offline');
+  }
+}
+
+// DELETE ONE ORDER
+async function deleteFromDb(id){
+  setSyncing('Deleting…');
+  try {
+    const res = await fetch(sbUrl('orders?id=eq.'+id), { method:'DELETE', headers:SB_HEADERS });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    setSynced();
+  } catch(e){
+    setSyncError('Delete failed');
+  }
+}
+
+// LOCAL FALLBACK (offline support)
+function saveLocalFallback(){
+  try { localStorage.setItem(LOCAL_FALLBACK, JSON.stringify(ORDERS)); } catch(e){}
+}
+function loadLocalFallback(){
+  try {
+    const s = localStorage.getItem(LOCAL_FALLBACK);
+    if(s){ const d=JSON.parse(s); if(d.length){ ORDERS.length=0; d.forEach(o=>{ if(o._id>=_nextId)_nextId=o._id+1; ORDERS.push(o); }); } }
+  } catch(e){}
+}
+
+function setLoadingMsg(msg){ const el=document.getElementById('loadingMsg'); if(el) el.textContent=msg; }
+function hideLoading(){ const el=document.getElementById('loadingOverlay'); if(el) el.style.display='none'; }
+
+function showSaveIndicator(){ setSynced(); }
+
+function resetToOriginal() {
+  if (!confirm('This will DELETE ALL orders from the database and restore the original data. Are you sure?')) return;
+  (async()=>{
+    setSyncing('Resetting…');
+    try{
+      await fetch(sbUrl('orders?id=gte.0'), { method:'DELETE', headers:SB_HEADERS });
+      ORDERS.length=0;
+      await seedDatabase();
+      refresh();
+      setSynced();
+      alert('✓ Reset complete!');
+    }catch(e){ setSyncError('Reset failed'); }
+  })();
+}
+
+// STATE
+let currentTab='overview', overviewPage=1, allPage=1;
+let activeYear=2026; // currently selected year for the dashboard
+const PAGE_SIZE=20;
+let overviewSort={key:'DueDate',dir:1}, allSort={key:'Year',dir:-1};
+let currentOrderId=null, chartsDrawn=false;
+let weekOffset=0;
+
+// HELPERS
+const $=id=>document.getElementById(id);
+const today=new Date(); today.setHours(0,0,0,0);
+function fmt$(n){return n>0?'$'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','):'—';}
+function fmtDate(d){if(!d)return '—';const p=d.split('-');if(p.length<3)return d;return p[1]+'/'+p[2]+'/'+p[0];}
+function daysDiff(dateStr){if(!dateStr)return null;const d=new Date(dateStr);d.setHours(0,0,0,0);return Math.round((d-today)/86400000);}
+function statusBadge(s){const m={'Completed':'badge-completed','Not started':'badge-not-started','In progress':'badge-in-progress'};return `<span class="badge ${m[s]||'badge-not-started'}">${s||'Unknown'}</span>`;}
+function paidBadge(p){const m={'Paid':'badge-paid','Not paid':'badge-not-paid','Deposit':'badge-deposit'};return `<span class="badge ${m[p]||'badge-not-paid'}">${p||'Unknown'}</span>`;}
+function initials(name){if(!name)return '?';const w=name.trim().split(' ');return (w[0][0]+(w[1]?w[1][0]:'')).toUpperCase();}
+
+// TABS
+function showTab(name){
+  ['overview','open','upcoming','orders','clients','alerts','charts','settings'].forEach(t=>{
+    $('tab-'+t).style.display=t===name?'':'none';
+  });
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',['overview','open','upcoming','orders','clients','alerts','charts','settings'][i]===name);
+  });
+  currentTab=name;
+  if(name==='upcoming')renderWeek();
+  if(name==='alerts')renderAlerts();
+  if(name==='open')renderOpenOrders();
+  if(name==='settings')renderSettings();
+  if(name==='charts'&&!chartsDrawn){chartsDrawn=true;setTimeout(renderCharts,100);}
+}
+
+// helper: true remaining balance on an order after deposit
+function orderBalance(o){
+  const total=(o.Amount||0)+(o.DeliveryFee||0);
+  return Math.max(0,total-(o.Deposit||0));
+}
+
+// YEAR SWITCHER
+function renderYearSwitcher(){
+  const sorted=[...new Set(YEARS)].sort((a,b)=>b-a);
+  const sel=$('yearSwitcher');
+  const cur=sel.value||String(activeYear);
+  sel.innerHTML='';
+  const allOpt=document.createElement('option');
+  allOpt.value='all';
+  allOpt.textContent='All Years';
+  if(activeYear==='all') allOpt.selected=true;
+  sel.appendChild(allOpt);
+  sorted.forEach(function(y){
+    const opt=document.createElement('option');
+    opt.value=String(y);
+    opt.textContent=y;
+    if(y===activeYear) opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+function switchYear(y){
+  activeYear=y;
+  overviewPage=1;
+  renderYearSwitcher();
+  // Update section title
+  const tag=$('overviewYearTag');const title=$('overviewSectionTitle');
+  if(tag) tag.textContent=y==='all'?'All':y;
+  if(title){const firstWord=y==='all'?'All Orders':''+y+' Orders';title.childNodes[0].textContent=firstWord+' ';}
+  renderMetrics();
+  renderOverviewTable();
+  // Also refresh other tabs if visible
+  if(currentTab==='open') renderOpenOrders();
+  if(currentTab==='alerts') renderAlerts();
+  if(currentTab==='upcoming') renderWeek();
+  chartsDrawn=false;
+  if(currentTab==='charts'){ renderCharts(); chartsDrawn=true; }
+}
+
+// METRICS
+function renderMetrics(){
+  const yOrders=activeYear==='all'?ORDERS:ORDERS.filter(o=>o.Year===activeYear);
+  const prevYear=activeYear==='all'?null:activeYear-1;
+  const prevOrders=prevYear?ORDERS.filter(o=>o.Year===prevYear):[];
+  const rev=yOrders.reduce((s,o)=>s+o.Amount,0);
+  const prevRev=prevOrders.reduce((s,o)=>s+o.Amount,0);
+  const owed=yOrders.filter(o=>o.Paid!=='Paid').reduce((s,o)=>s+orderBalance(o),0);
+  const pending=yOrders.filter(o=>o.Status!=='Completed').length;
+  const allRev=ORDERS.reduce((s,o)=>s+o.Amount,0);
+  const yr=activeYear==='all'?'All Time':activeYear;
+  const subLabel=activeYear==='all'?YEARS.length+' years tracked':prevYear?`vs ${fmt$(prevRev)} in ${prevYear}`:'';
+  $('metricsArea').innerHTML=`
+    <div class="metric-card pink" onclick="showTab('overview')">
+      <div class="metric-label">${yr} Revenue</div>
+      <div class="metric-value">${fmt$(rev)}</div>
+      <div class="metric-sub">${subLabel}</div>
+    </div>
+    <div class="metric-card red" onclick="showTab('clients')">
+      <div class="metric-label">Still Owed</div>
+      <div class="metric-value">${fmt$(owed)}</div>
+      <div class="metric-click-hint">↗ Click to look up client</div>
+    </div>
+    <div class="metric-card amber" onclick="showTab('open')">
+      <div class="metric-label">Open Orders</div>
+      <div class="metric-value">${pending}</div>
+      <div class="metric-click-hint">↗ Click to view all open</div>
+    </div>
+    <div class="metric-card green">
+      <div class="metric-label">Total Orders</div>
+      <div class="metric-value">${yOrders.length}</div>
+      <div class="metric-sub">${yOrders.filter(o=>o.Status==='Completed').length} completed</div>
+    </div>
+    <div class="metric-card brown">
+      <div class="metric-label">All-Time Revenue</div>
+      <div class="metric-value">${fmt$(allRev)}</div>
+      <div class="metric-sub">${ORDERS.length} total orders</div>
+    </div>`;
+}
+
+// OPEN ORDERS TAB
+function renderOpenOrders(){
+  const q=($('openSearch')?.value||'').toLowerCase();
+  const pd=($('openPaidFilter')?.value||'');
+  const openBase=activeYear==='all'?ORDERS:ORDERS.filter(o=>o.Year===activeYear);
+  let orders=openBase.filter(o=>o.Status!=='Completed');
+  if(q)orders=orders.filter(o=>o.Task.toLowerCase().includes(q)||o.Client.toLowerCase().includes(q));
+  if(pd)orders=orders.filter(o=>o.Paid===pd);
+  orders.sort((a,b)=>{
+    if(!a.DueDate&&!b.DueDate)return 0;
+    if(!a.DueDate)return 1;if(!b.DueDate)return -1;
+    return a.DueDate.localeCompare(b.DueDate);
+  });
+  const el=$('openOrdersList');
+  if(!orders.length){el.innerHTML='<div class="empty-state"><p>No open orders found! 🎉</p></div>';return;}
+  el.innerHTML=orders.map(o=>{
+    const d=daysDiff(o.DueDate);
+    let dueHtml='<span class="open-order-due due-ok">No date</span>';
+    if(d!==null){
+      if(d<0)dueHtml=`<span class="open-order-due due-overdue">⚠ Overdue ${fmtDate(o.DueDate)}</span>`;
+      else if(d<=7)dueHtml=`<span class="open-order-due due-soon">Due ${fmtDate(o.DueDate)} (${d}d)</span>`;
+      else dueHtml=`<span class="open-order-due due-ok">Due ${fmtDate(o.DueDate)}</span>`;
+    }
+    return `<div class="open-order-card" onclick="openDetail(${o._id})">
+      <div class="open-order-info">
+        <div class="open-order-name">${o.Task}</div>
+        <div class="open-order-client">${o.Client||'No client set'} · ${o.Year}</div>
+      </div>
+      ${dueHtml}
+      ${paidBadge(o.Paid)}
+      <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--brown)">${fmt$(o.Amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+// WEEK VIEW
+function getWeekStart(offset){
+  const d=new Date(today);
+  const dow=d.getDay();
+  d.setDate(d.getDate()-dow+(offset*7));
+  return d;
+}
+function changeWeek(dir){weekOffset+=dir;renderWeek();}
+function goToThisWeek(){weekOffset=0;renderWeek();}
+function renderWeek(){
+  const ws=getWeekStart(weekOffset);
+  const we=new Date(ws);we.setDate(we.getDate()+6);
+  const opts={month:'short',day:'numeric'};
+  $('weekLabel').textContent=ws.toLocaleDateString('en-US',opts)+' – '+we.toLocaleDateString('en-US',{...opts,year:'numeric'});
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(ws);d.setDate(ws.getDate()+i);
+    const ds=d.toISOString().split('T')[0];
+    const isToday=ds===today.toISOString().split('T')[0];
+    const dayOrders=ORDERS.filter(o=>o.DueDate===ds);
+    const hasOrders=dayOrders.length>0;
+    html+=`<div class="week-day${isToday?' today':''}${hasOrders?' has-orders':''}" onclick="showDayOrders('${ds}','${days[i]} ${d.getDate()}')">
+      <div class="week-day-name">${days[i]}</div>
+      <div class="week-day-num">${d.getDate()}</div>
+      ${dayOrders.slice(0,3).map(o=>{
+        const cls=o.Status==='Completed'?'done':(daysDiff(o.DueDate)<0?'overdue':'');
+        return `<span class="week-order-pill ${cls}" onclick="event.stopPropagation();openDetail(${o._id})" title="${o.Task}">${o.Task.length>14?o.Task.slice(0,14)+'…':o.Task}</span>`;
+      }).join('')}
+      ${dayOrders.length>3?`<span style="font-size:10px;color:var(--amber);font-weight:600">+${dayOrders.length-3} more</span>`:''}
+    </div>`;
+  }
+  // Also show orders with no date in this week's view (only when on current week)
+  if(weekOffset===0){
+    const noDateOrders=ORDERS.filter(o=>!o.DueDate&&o.Status!=='Completed');
+    if(noDateOrders.length){
+      html+=`<div style="grid-column:1/-1;margin-top:12px;background:var(--gray-light);border-radius:10px;padding:12px;"><div style="font-size:12px;font-weight:600;color:var(--brown-light);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">No Due Date Set</div>`;
+      html+=noDateOrders.map(o=>`<span class="week-order-pill no-date" style="display:inline-block;margin:2px 4px 2px 0;" onclick="openDetail(${o._id})">${o.Task}</span>`).join('');
+      html+='</div>';
+    }
+  }
+  $('weekGrid').innerHTML=html;
+  $('weekDayTitle').style.display='none';
+  $('weekDayOrders').innerHTML='';
+}
+function showDayOrders(dateStr,label){
+  const orders=ORDERS.filter(o=>o.DueDate===dateStr);
+  const t=$('weekDayTitle');const el=$('weekDayOrders');
+  if(!orders.length){t.style.display='none';el.innerHTML='';return;}
+  t.style.display='flex';t.textContent=label+' — '+orders.length+' order'+(orders.length>1?'s':'');
+  el.innerHTML=orders.map(o=>`<div class="open-order-card" onclick="openDetail(${o._id})">
+    <div class="open-order-info"><div class="open-order-name">${o.Task}</div><div class="open-order-client">${o.Client||'No client'}</div></div>
+    ${statusBadge(o.Status)}${paidBadge(o.Paid)}
+    <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--brown)">${fmt$(o.Amount)}</div>
+  </div>`).join('');
+}
+
+// TABLE RENDERING
+function filterOrders(source,searchId,yearId,statusId,paidId){
+  const q=($( searchId)?.value||'').toLowerCase();
+  const yr=$(yearId)?.value||'';
+  const st=$(statusId)?.value||'';
+  const pd=$(paidId)?.value||'';
+  return source.filter(o=>{
+    if(q&&!o.Task.toLowerCase().includes(q)&&!o.Client.toLowerCase().includes(q))return false;
+    if(yr&&String(o.Year)!==yr)return false;
+    if(st&&o.Status!==st)return false;
+    if(pd&&o.Paid!==pd)return false;
+    return true;
+  });
+}
+function sortOrders(arr,key,dir){return[...arr].sort((a,b)=>{let av=a[key]||'',bv=b[key]||'';if(typeof av==='number')return(av-bv)*dir;return av.localeCompare(bv)*dir;});}
+function renderTable(tbodyId,pagId,orders,page,cols){
+  const start=(page-1)*PAGE_SIZE;
+  const slice=orders.slice(start,start+PAGE_SIZE);
+  const tbody=$(tbodyId);
+  if(!orders.length){tbody.innerHTML=`<tr><td colspan="${cols.length}" class="empty-state"><p>No orders found.</p></td></tr>`;$(pagId).innerHTML='';return;}
+  tbody.innerHTML=slice.map(o=>{
+    const cells=cols.map(col=>{
+      if(col==='Status')return `<td>${statusBadge(o.Status)}</td>`;
+      if(col==='Paid')return `<td>${paidBadge(o.Paid)}</td>`;
+      if(col==='Amount')return `<td>${fmt$(o.Amount)}</td>`;
+      if(col==='DueDate')return `<td>${fmtDate(o.DueDate)}</td>`;
+      if(col==='Task')return `<td class="task-name">${o.Task}</td>`;
+      return `<td>${o[col]||'—'}</td>`;
+    });
+    return `<tr onclick="openDetail(${o._id})">${cells.join('')}</tr>`;
+  }).join('');
+  const totalPages=Math.ceil(orders.length/PAGE_SIZE);
+  let html=`<span>${orders.length} orders</span><div class="page-btns">`;
+  html+=`<button class="page-btn" onclick="changePage('${tbodyId}',${page-1})" ${page<=1?'disabled':''}>‹</button>`;
+  for(let p=Math.max(1,page-2);p<=Math.min(totalPages,page+2);p++){html+=`<button class="page-btn ${p===page?'active':''}" onclick="changePage('${tbodyId}',${p})">${p}</button>`;}
+  html+=`<button class="page-btn" onclick="changePage('${tbodyId}',${page+1})" ${page>=totalPages?'disabled':''}>›</button></div>`;
+  $(pagId).innerHTML=html;
+}
+function changePage(tbodyId,p){if(tbodyId==='overviewTbody'){overviewPage=p;renderOverviewTable();}else{allPage=p;renderAllTable();}}
+function renderOverviewTable(){
+  const base=activeYear==='all'?ORDERS:ORDERS.filter(o=>o.Year===activeYear);
+  const data=filterOrders(base,'overviewSearch',null,'overviewStatusFilter','overviewPaidFilter');
+  const cols=activeYear==='all'?['Task','Client','Year','DueDate','Amount','Status','Paid']:['Task','Client','DueDate','Amount','Status','Paid'];
+  renderTable('overviewTbody','overviewPag',sortOrders(data,overviewSort.key,overviewSort.dir),overviewPage,cols);
+}
+function renderAllTable(){
+  const data=filterOrders(ORDERS,'allSearch','allYearFilter','allStatusFilter','allPaidFilter');
+  renderTable('allTbody','allPag',sortOrders(data,allSort.key,allSort.dir),allPage,['Task','Client','Year','DueDate','Amount','Status','Paid']);
+}
+function sortTable(view,key){
+  if(view==='overview'){if(overviewSort.key===key)overviewSort.dir*=-1;else{overviewSort.key=key;overviewSort.dir=1;}renderOverviewTable();}
+  else{if(allSort.key===key)allSort.dir*=-1;else{allSort.key=key;allSort.dir=1;}renderAllTable();}
+}
+
+// DETAIL MODAL
+function openDetail(id){
+  const o=ORDERS.find(x=>x._id===id);if(!o)return;
+  currentOrderId=id;
+  $('detailTitle').textContent=o.Task;
+  const baseAmt=o.Amount||0;
+  const delivAmt=o.DeliveryFee||0;
+  const depAmt=o.Deposit||0;
+  const totalAmt=baseAmt+delivAmt;
+  const balanceAmt=Math.max(0,totalAmt-depAmt);
+  const balanceColor=balanceAmt>0?'var(--red)':'var(--green)';
+  const balanceText=balanceAmt===0&&depAmt>0?'✓ Paid in full':'$'+balanceAmt.toFixed(2);
+  $('detailBody').innerHTML=`
+    <div style="background:var(--cream2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);">Order Amount</span>
+        <span style="font-size:18px;font-weight:700;font-family:'Fraunces',serif;color:var(--brown);">${'$'+baseAmt.toFixed(2)}</span>
+      </div>
+      ${delivAmt>0?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);">Delivery Fee</span><span style="font-size:18px;font-weight:700;font-family:'Fraunces',serif;color:var(--brown);">+${'$'+delivAmt.toFixed(2)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1.5px solid var(--border);margin-bottom:8px;">
+        <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--brown);">Total</span>
+        <span style="font-size:22px;font-weight:700;font-family:'Fraunces',serif;color:var(--brown);">${'$'+totalAmt.toFixed(2)}</span>
+      </div>
+      ${depAmt>0?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);">Deposit Received</span><span style="font-size:18px;font-weight:700;font-family:'Fraunces',serif;color:var(--green);">-${'$'+depAmt.toFixed(2)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1.5px solid var(--border);">
+        <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--brown);">Balance Due</span>
+        <span style="font-size:26px;font-weight:700;font-family:'Fraunces',serif;color:${balanceColor};">${balanceText}</span>
+      </div>
+    </div>
+    ${row('Client',o.Client||'—')}${row('Due Date',fmtDate(o.DueDate))}${row('Year',o.Year)}
+    ${row('Status',statusBadge(o.Status))}${row('Payment',paidBadge(o.Paid))}
+    ${row('Pickup',o.Pickup||'—')}${o.Notes?row('Notes',o.Notes):''}`;
+  $('detailModal').classList.add('open');
+}
+function row(label,val){return `<div class="modal-detail-row"><div class="modal-detail-label">${label}</div><div class="modal-detail-value">${val}</div></div>`;}
+function closeModal(id){$(id).classList.remove('open');}
+function editCurrentOrder(){
+  const o=ORDERS.find(x=>x._id===currentOrderId);
+  if(!o)return;
+  closeModal('detailModal');
+  populateEditForm(o);
+  $('editModalTitle').textContent='Edit Order';
+  $('editModal').classList.add('open');
+}
+function deleteCurrentOrder(){
+  if(!confirm('Delete this order?'))return;
+  const id=currentOrderId;
+  ORDERS=ORDERS.filter(o=>o._id!==id);
+  closeModal('detailModal');
+  refresh();
+  deleteFromDb(id);
+}
+
+// NEW/EDIT ORDER
+function openNewOrderModal(){currentOrderId=null;populateEditForm({Task:'',Client:'',DueDate:'',Amount:0,DeliveryFee:0,Deposit:0,Year:2026,Status:'Not started',Paid:'Not paid',Pickup:'No',Notes:''});$('editModalTitle').textContent='New Order';$('editModal').classList.add('open');}
+function populateEditForm(o){
+  $('f_task').value=o.Task||'';
+  $('f_client').value=o.Client||'';
+  $('f_duedate').value=o.DueDate||'';
+  $('f_amount').value=o.Amount||0;
+  $('f_delivery').value=o.DeliveryFee||0;
+  $('f_deposit').value=o.Deposit||0;
+  $('f_year').value=String(o.Year||2026);
+  $('f_status').value=o.Status||'Not started';
+  $('f_paid').value=o.Paid||'Not paid';
+  $('f_pickup').value=o.Pickup||'No';
+  $('f_notes').value=o.Notes||'';
+  updateBalanceSummary();
+}
+function updateBalanceSummary(){
+  const amt=parseFloat($('f_amount').value)||0;
+  const del=parseFloat($('f_delivery').value)||0;
+  const dep=parseFloat($('f_deposit').value)||0;
+  const total=amt+del;
+  const balance=Math.max(0,total-dep);
+  $('bs_total').textContent='$'+total.toFixed(2);
+  $('bs_deposit').textContent='-$'+dep.toFixed(2);
+  $('bs_balance').textContent='$'+balance.toFixed(2);
+  $('bs_balance').style.color=balance>0?'var(--red)':'var(--green)';
+  if(balance===0&&dep>0) $('bs_balance').textContent='✓ Paid in full';
+}
+function saveOrder(){
+  const task=$('f_task').value.trim();
+  if(!task){alert('Please enter an order name.');return;}
+  const delivery=parseFloat($('f_delivery').value)||0;
+  const base=parseFloat($('f_amount').value)||0;
+  const deposit=parseFloat($('f_deposit').value)||0;
+  const data={
+    Task:task,
+    Client:$('f_client').value.trim(),
+    DueDate:$('f_duedate').value,
+    Amount:base,
+    DeliveryFee:delivery,
+    Deposit:deposit,
+    Year:parseInt($('f_year').value)||2026,
+    Status:$('f_status').value,
+    Paid:$('f_paid').value,
+    Pickup:$('f_pickup').value,
+    Notes:$('f_notes').value.trim()
+  };
+  if(currentOrderId===null){
+    data._id = 'tmp_'+Date.now();
+    data._isNew = true;
+    ORDERS.unshift(data);
+    closeModal('editModal');
+    refresh();
+    persistData(data);
+  } else {
+    const idx=ORDERS.findIndex(o=>o._id===currentOrderId);
+    if(idx>=0){
+      ORDERS[idx]={...ORDERS[idx],...data};
+      closeModal('editModal');
+      refresh();
+      persistData(ORDERS[idx]);
+    } else {
+      data._id = 'tmp_'+Date.now();
+      data._isNew = true;
+      ORDERS.unshift(data);
+      closeModal('editModal');
+      refresh();
+      persistData(data);
+    }
+  }
+}
+
+// CLIENT SEARCH
+function onClientSearch(){
+  const q=$('clientSearchInput').value.trim().toLowerCase();
+  if(!q){$('clientSuggestions').innerHTML='';$('clientProfile').innerHTML='';return;}
+  const clients=[...new Set(ORDERS.map(o=>(o.Client||'').trim()).filter(c=>c&&c.toLowerCase().includes(q)))].slice(0,10);
+  $('clientSuggestions').innerHTML=clients.length
+    ?'<div style="margin-top:8px;font-size:12px;color:var(--brown-light);margin-bottom:6px;">Matching clients:</div>'+clients.map(c=>`<span class="client-suggestion" onclick="loadClientProfile('${c.replace(/'/g,"\\'")}')">  ${c}</span>`).join('')
+    :'<div style="margin-top:8px;font-size:13px;color:var(--brown-light);">No clients found.</div>';
+}
+function loadClientProfile(clientName){
+  $('clientSearchInput').value=clientName;
+  $('clientSuggestions').innerHTML='';
+  const cOrders=ORDERS.filter(o=>(o.Client||'').trim().toLowerCase()===clientName.trim().toLowerCase());
+  if(!cOrders.length){$('clientProfile').innerHTML='<div class="empty-state"><p>No orders found for this client.</p></div>';return;}
+  const total=cOrders.reduce((s,o)=>s+o.Amount,0);
+  const paid=cOrders.filter(o=>o.Paid==='Paid').reduce((s,o)=>s+o.Amount,0);
+  const owed=cOrders.filter(o=>o.Paid!=='Paid').reduce((s,o)=>s+orderBalance(o),0);
+  const openOrds=cOrders.filter(o=>o.Status!=='Completed').length;
+  const balanceMsg=buildBalanceMessage(clientName,owed,cOrders);
+  $('clientProfile').innerHTML=`
+    <div class="client-profile">
+      <div class="client-profile-header">
+        <div class="client-avatar">${initials(clientName)}</div>
+        <div>
+          <div class="client-name">${clientName}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);">${cOrders.length} total order${cOrders.length>1?'s':''}</div>
+        </div>
+      </div>
+      <div class="client-stats">
+        <div class="client-stat"><div class="client-stat-label">Total Billed</div><div class="client-stat-value">${fmt$(total)}</div></div>
+        <div class="client-stat"><div class="client-stat-label">Amount Paid</div><div class="client-stat-value green">${fmt$(paid)}</div></div>
+        <div class="client-stat"><div class="client-stat-label">Balance Owed</div><div class="client-stat-value red">${fmt$(owed)}</div></div>
+        <div class="client-stat"><div class="client-stat-label">Open Orders</div><div class="client-stat-value">${openOrds}</div></div>
+      </div>
+      <div class="client-orders-section">
+        ${owed>0?`
+        <div class="balance-alert">
+          <div><div class="balance-alert-text">Outstanding Balance</div><div style="font-size:12px;color:var(--brown-light);margin-top:3px;">${cOrders.filter(o=>o.Paid!=='Paid').length} unpaid order${cOrders.filter(o=>o.Paid!=='Paid').length>1?'s':''}</div></div>
+          <div class="balance-alert-amt">${fmt$(owed)}</div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--brown);margin-bottom:8px;">✏️ Payment reminder message — edit before sending:</div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);display:block;margin-bottom:5px;">Message Heading / Subject</label>
+          <input type="text" id="msgHeading" value="Balance Due" style="width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--brown);outline:none;" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <textarea id="msgPreview" style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.7;color:var(--brown);background:var(--cream2);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;height:200px;resize:vertical;outline:none;" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'">${balanceMsg}</textarea>
+        <div class="send-actions">
+          <button class="btn-copy" onclick="copyMessage()">📋 Copy Message</button>
+          <button class="btn-send" onclick="sendViaSMS()">📱 Send via Text</button>
+          <button class="btn-send" style="background:var(--blue);" onclick="sendViaEmail()">✉️ Send via Email</button>
+          <span class="copy-confirm" id="copyConfirm">✓ Copied!</span>
+        </div>`:'<div style="padding:14px;background:var(--green-light);border-radius:10px;color:var(--green);font-weight:600;">✓ All paid up! No balance owed.</div>'}
+        <div style="margin-top:22px;">
+          <div style="font-size:13px;font-weight:600;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Order History</div>
+          ${cOrders.map(o=>`<div class="open-order-card" onclick="openDetail(${o._id})">
+            <div class="open-order-info"><div class="open-order-name">${o.Task}</div><div class="open-order-client">${fmtDate(o.DueDate)} · ${o.Year}</div></div>
+            ${statusBadge(o.Status)}${paidBadge(o.Paid)}
+            <div style="font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--brown)">${fmt$(o.Amount)}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+function buildBalanceMessage(client,owed,orders){
+  const unpaid=orders.filter(o=>o.Paid!=='Paid');
+  const lines=unpaid.map(o=>`• ${o.Task}: ${fmt$(orderBalance(o))}`).join('\n');
+  return `Hi ${client}! 👋\n\nUnpaid Orders:\n${lines}\n\nTotal Balance Due: ${fmt$(owed)}\n\nThank you!`;
+}
+function copyMessage(){
+  const msg=$('msgPreview').value;
+  navigator.clipboard.writeText(msg).then(()=>{
+    const el=$('copyConfirm');el.style.display='inline';
+    setTimeout(()=>el.style.display='none',2500);
+  }).catch(()=>{
+    $('msgPreview').select();document.execCommand('copy');
+    const el=$('copyConfirm');el.style.display='inline';
+    setTimeout(()=>el.style.display='none',2500);
+  });
+}
+function sendViaSMS(){
+  const msg=$('msgPreview').value;
+  window.location.href='sms:?body='+encodeURIComponent(msg);
+}
+function sendViaEmail(){
+  const msg=$('msgPreview').value;
+  const subj=$('msgHeading')?$('msgHeading').value:'Balance Due - Manitas Creations';
+  window.location.href='mailto:?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(msg);
+}
+
+// ALERTS
+function renderAlerts(){
+  const alertBase=activeYear==='all'?ORDERS:ORDERS.filter(o=>o.Year===activeYear);
+  const owed=alertBase.filter(o=>o.Paid==='Not paid'||o.Paid==='Deposit');
+  $('owedList').innerHTML=owed.length
+    ?owed.map(o=>{
+        const bal=orderBalance(o);
+        const dep=o.Deposit||0;
+        const total=(o.Amount||0)+(o.DeliveryFee||0);
+        return `<div class="owed-card" onclick="openDetail(${o._id})">
+          <div class="owed-info">
+            <div class="owed-name">${o.Task}</div>
+            <div class="owed-client">${o.Client||'No client'} · ${o.Year}</div>
+            ${dep>0?`<div style="font-size:11px;color:var(--brown-light);margin-top:2px;">Total ${fmt$(total)} · Deposit paid ${fmt$(dep)}</div>`:''}
+          </div>
+          ${paidBadge(o.Paid)}
+          <div style="text-align:right;">
+            <div class="owed-amt">${fmt$(bal)}</div>
+            ${dep>0?`<div style="font-size:10px;color:var(--brown-light);font-weight:500;">remaining</div>`:''}
+          </div>
+        </div>`;
+      }).join('')
+    :'<p style="color:var(--green);font-weight:500">✓ All orders paid up!</p>';
+  const overdue=alertBase.filter(o=>{const d=daysDiff(o.DueDate);return d!==null&&d<0&&o.Status!=='Completed';});
+  $('overdueList').innerHTML=overdue.length
+    ?overdue.map(o=>`<div class="owed-card" style="background:var(--red-light);border-color:rgba(192,57,43,.3);" onclick="openDetail(${o._id})">
+        <div class="owed-info"><div class="owed-name">${o.Task}</div><div class="owed-client">${o.Client||'No client'} · ${fmtDate(o.DueDate)}</div></div>
+        <span class="overdue-badge">OVERDUE</span>${statusBadge(o.Status)}</div>`).join('')
+    :'<p style="color:var(--brown-light)">No overdue orders 👍</p>';
+}
+
+// CHARTS
+function renderCharts(){
+  // Destroy existing charts first
+  ['chartRevYear','chartPaid','chartMonthly','chartStatus','chartClients'].forEach(id=>{
+    const c=Chart.getChart(id);if(c)c.destroy();
+  });
+  const o26=activeYear==='all'?ORDERS:ORDERS.filter(o=>o.Year===activeYear);
+  const o25=activeYear==='all'?[]:ORDERS.filter(o=>o.Year===activeYear-1);
+  const chartYear=activeYear==='all'?'All':activeYear;
+  // Revenue by year chart — show all years
+  const allYearsSorted=[...new Set(YEARS)].sort();
+  const revByYear=allYearsSorted.map(y=>Math.round(ORDERS.filter(o=>o.Year===y).reduce((s,o)=>s+o.Amount,0)));
+  const barColors=allYearsSorted.map(y=>y===activeYear||activeYear==='all'?'var(--pink)':'#8c6555');
+  new Chart($('chartRevYear'),{type:'bar',data:{labels:allYearsSorted.map(String),datasets:[{label:'Revenue',data:revByYear,backgroundColor:barColors,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:activeYear!=='all',text:'Highlighted: '+chartYear,color:'var(--brown-light)',font:{size:11}}},scales:{y:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+  const paid26=o26.filter(o=>o.Paid==='Paid').length,np26=o26.filter(o=>o.Paid==='Not paid').length,dep26=o26.filter(o=>o.Paid==='Deposit').length;
+  new Chart($('chartPaid'),{type:'doughnut',data:{labels:['Paid ('+chartYear+')','Not Paid','Deposit'],datasets:[{data:[paid26,np26,dep26],backgroundColor:['#3a7d5e','#c0392b','#c47d1a'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:12}}}}}});
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],monthly=new Array(12).fill(0);
+  o26.forEach(o=>{if(!o.DueDate)return;const m=parseInt(o.DueDate.split('-')[1])-1;if(m>=0&&m<12)monthly[m]+=o.Amount;});
+  new Chart($('chartMonthly'),{type:'bar',data:{labels:months,datasets:[{label:'Revenue '+chartYear,data:monthly.map(Math.round),backgroundColor:'var(--pink)',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}},x:{ticks:{autoSkip:false}}}}});
+  const comp=o26.filter(o=>o.Status==='Completed').length,notst=o26.filter(o=>o.Status==='Not started').length,inprog=o26.filter(o=>o.Status==='In progress').length;
+  new Chart($('chartStatus'),{type:'doughnut',data:{labels:['Completed','Not Started','In Progress'],datasets:[{data:[comp,notst,inprog],backgroundColor:['#3a7d5e','#888','#c47d1a'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:12}}}}}});
+  const clientMap={};ORDERS.forEach(o=>{const c=(o.Client||'Unknown').trim();clientMap[c]=(clientMap[c]||0)+o.Amount;});
+  const top=Object.entries(clientMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const chartH=Math.max(260,top.length*40+80);$('chartClients').parentElement.style.height=chartH+'px';
+  new Chart($('chartClients'),{type:'bar',data:{labels:top.map(x=>x[0].length>18?x[0].slice(0,18)+'…':x[0]),datasets:[{label:'Revenue',data:top.map(x=>Math.round(x[1])),backgroundColor:'#5c3a2a',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>'$'+v},grid:{color:'rgba(0,0,0,0.06)'}}}}}); 
+}
+
+
+// SETTINGS
+const SETTINGS_KEY='manitas_settings_v1';
+const YEARS_KEY='manitas_years_v1';
+let APP_SETTINGS={bizName:'Manitas Creations',tagline:'Order Management Dashboard',color:'#e8527a'};
+let YEARS=[2025,2026];
+
+function loadSettings(){
+  try{
+    const s=localStorage.getItem(SETTINGS_KEY);
+    if(s) APP_SETTINGS={...APP_SETTINGS,...JSON.parse(s)};
+    const y=localStorage.getItem(YEARS_KEY);
+    if(y) YEARS=JSON.parse(y);
+  }catch(e){}
+  applySettings();
+}
+
+function applySettings(){
+  renderYearSwitcher();
+  // Business name & tagline
+  const logoEl=document.querySelector('.logo');
+  if(logoEl){
+    const parts=APP_SETTINGS.bizName.split(' ');
+    const last=parts.pop();
+    logoEl.innerHTML=parts.join(' ')+' <span>'+last+'</span>';
+  }
+  const metaEl=document.querySelector('.header-meta');
+  if(metaEl) metaEl.textContent=APP_SETTINGS.tagline;
+  // Accent color
+  const r=document.documentElement;
+  r.style.setProperty('--pink', APP_SETTINGS.color);
+  // Darken for hover
+  r.style.setProperty('--pink-dark', shadeColor(APP_SETTINGS.color,-20));
+  r.style.setProperty('--pink-light', shadeColor(APP_SETTINGS.color,85));
+  // Rebuild year dropdowns
+  rebuildYearDropdowns();
+}
+
+function shadeColor(hex,pct){
+  const num=parseInt(hex.slice(1),16);
+  const r=Math.min(255,Math.max(0,(num>>16)+Math.round(2.55*pct)));
+  const g=Math.min(255,Math.max(0,((num>>8)&0xff)+Math.round(2.55*pct)));
+  const b=Math.min(255,Math.max(0,(num&0xff)+Math.round(2.55*pct)));
+  return '#'+(r<<16|g<<8|b).toString(16).padStart(6,'0');
+}
+
+function rebuildYearDropdowns(){
+  const sorted=[...new Set(YEARS)].sort((a,b)=>b-a);
+  ['f_year','allYearFilter'].forEach(id=>{
+    const el=$(id);if(!el)return;
+    const cur=el.value;
+    if(id==='allYearFilter'){
+      el.innerHTML='<option value="">All Years</option>'+sorted.map(y=>`<option value="${y}">${y}</option>`).join('');
+    } else {
+      el.innerHTML=sorted.map(y=>`<option value="${y}">${y}</option>`).join('');
+    }
+    if(cur) el.value=cur;
+  });
+}
+
+function renderSettings(){
+  $('s_bizname').value=APP_SETTINGS.bizName;
+  $('s_tagline').value=APP_SETTINGS.tagline;
+  $('s_color').value=APP_SETTINGS.color;
+  renderYearsList();
+}
+
+function renderYearsList(){
+  const sorted=[...new Set(YEARS)].sort((a,b)=>b-a);
+  $('yearsList').innerHTML=sorted.map(y=>`
+    <div style="display:flex;align-items:center;gap:6px;background:var(--cream2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;">
+      <span style="font-weight:600;font-size:14px;">${y}</span>
+      ${sorted.length>1?`<button onclick="removeYear(${y})" style="background:none;border:none;color:var(--brown-light);cursor:pointer;font-size:15px;padding:0 2px;line-height:1;" title="Remove year">×</button>`:''}
+    </div>`).join('');
+}
+
+function addYear(){
+  const val=parseInt($('s_newyear').value);
+  if(!val||val<2020||val>2099){alert('Please enter a valid year (2020–2099)');return;}
+  if(YEARS.includes(val)){alert('That year already exists!');return;}
+  YEARS.push(val);
+  saveYears();
+  rebuildYearDropdowns();
+  renderYearsList();
+  $('s_newyear').value='';
+}
+
+function removeYear(y){
+  const hasOrders=ORDERS.some(o=>o.Year===y);
+  if(hasOrders&&!confirm(`Year ${y} has orders. Remove it from the dropdown anyway? (Orders will not be deleted)`))return;
+  YEARS=YEARS.filter(yr=>yr!==y);
+  saveYears();
+  rebuildYearDropdowns();
+  renderYearsList();
+}
+
+function saveYears(){
+  try{localStorage.setItem(YEARS_KEY,JSON.stringify(YEARS));}catch(e){}
+}
+
+function saveSettings(){
+  APP_SETTINGS.bizName=$('s_bizname').value.trim()||'Manitas Creations';
+  APP_SETTINGS.tagline=$('s_tagline').value.trim()||'Order Management Dashboard';
+  APP_SETTINGS.color=$('s_color').value;
+  try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(APP_SETTINGS));}catch(e){}
+  applySettings();
+  showSaveIndicator();
+  // Flash confirmation
+  const btn=event.target;
+  btn.textContent='✓ Saved!';
+  setTimeout(()=>btn.textContent='Save Changes',1800);
+}
+
+function setColor(hex){
+  $('s_color').value=hex;
+  APP_SETTINGS.color=hex;
+  applySettings();
+}
+
+function exportData(){
+  const exportable=ORDERS.map(o=>({...o}));
+  const blob=new Blob([JSON.stringify(exportable,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='manitas_orders_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data))throw new Error('Invalid format');
+      if(!confirm('This will replace all current orders with the imported data. Continue?'))return;
+      setSyncing('Importing…');
+      // Delete all existing rows
+      await fetch(sbUrl('orders?id=gte.0'),{method:'DELETE',headers:SB_HEADERS});
+      ORDERS.length=0;
+      // Insert in chunks
+      const chunks=[];
+      for(let i=0;i<data.length;i+=50)chunks.push(data.slice(i,i+50));
+      for(const chunk of chunks){
+        const rows=chunk.map(o=>orderToDb(o));
+        const res=await fetch(sbUrl('orders'),{method:'POST',headers:SB_HEADERS,body:JSON.stringify(rows)});
+        if(res.ok){const inserted=await res.json();inserted.forEach(r=>{const o=dbToOrder(r);if(o._id>=_nextId)_nextId=o._id+1;ORDERS.push(o);});}
+      }
+      saveLocalFallback();
+      refresh();
+      setSynced();
+      alert('✓ Import successful! '+ORDERS.length+' orders loaded.');
+    }catch(err){setSyncError('Import failed');alert('Error: '+err.message);}
+  };
+  reader.readAsText(file);
+}
+
+
+// INIT
+function refresh(){
+  renderYearSwitcher();renderMetrics();renderOverviewTable();
+  if(currentTab==='orders')renderAllTable();
+  if(currentTab==='alerts')renderAlerts();
+  if(currentTab==='open')renderOpenOrders();
+  if(currentTab==='upcoming')renderWeek();
+}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');});
+loadSettings();
+$('todayDate').textContent=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+// Boot: show data immediately, sync with DB in background
+(async function boot(){
+  // Pre-load built-in data so something shows instantly
+  if(ORDERS.length === 0){
+    BUILTIN_ORDERS.forEach((o,i) => { ORDERS.push({...o, _id: i}); _nextId = i+1; });
+  }
+  // Render immediately with whatever data we have
+  hideLoading();
+  refresh();
+  // Then sync with Supabase in background and re-render with live data
+  const ok = await loadFromSupabase();
+  if(ok) refresh(); // re-render with fresh DB data
+})();
+</script></body></html>
